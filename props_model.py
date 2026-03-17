@@ -611,7 +611,21 @@ def build_training_dataset(prop_type: str,
             total = pd.to_numeric(row.get(scol, np.nan), errors="coerce")
             if pd.isna(total) or gs < 1:
                 continue
-            actual = total / gs
+
+            # For pitchers: if GS looks wrong (=1 when SO is high),
+            # estimate GS from IP (avg ~5.5 IP per start)
+            if is_pit and gs <= 2 and total > 10:
+                ip = pd.to_numeric(row.get("IP", 0), errors="coerce") or 0
+                if ip > 10:
+                    gs = max(round(ip / 5.5), 1)
+
+            # Enforce minimum realistic GS for season stats
+            # Pitchers: min 5 starts, batters: min 20 games
+            min_gs = 5 if is_pit else 20
+            if gs < min_gs:
+                continue
+
+            actual = total / gs  # per-start or per-game rate
 
             gdate = pd.Timestamp(f"{int(season)}-07-01")
             team  = str(row.get("Team", ""))
