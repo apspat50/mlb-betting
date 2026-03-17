@@ -200,13 +200,20 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 continue
 
             try:
-                feats     = build_pitcher_k_features(
+                feats        = build_pitcher_k_features(
                     pitcher, today, pit_logs, opp_team, team_bat, home_team
                 )
-                pred_k9   = predict_stat(model_pkg, feats)
-                # Convert K/9 to expected Ks in a typical start (~5.5 IP average)
-                avg_ip    = feats.get("p_ip_L3", 5.5) or 5.5
-                pred_k_total = pred_k9 * avg_ip / 9
+                # predict_stat returns per-start K rate (e.g. 6.5 Ks per start)
+                pred_per_start = predict_stat(model_pkg, feats)
+
+                # Sanity check — if value > 20 it's a season total not per-start
+                # Convert it: avg pitcher makes ~30 starts, divide to get per-start
+                if pred_per_start > 20:
+                    pred_per_start = pred_per_start / 30.0
+
+                # K/9 rate for display
+                avg_ip = max(feats.get("p_ip_L3", 5.5) or 5.5, 1.0)
+                pred_k9 = pred_per_start / avg_ip * 9
 
                 predictions.append({
                     "pitcher":       pitcher,
@@ -216,7 +223,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     "time":          game["time"],
                     "opp_team":      opp_team,
                     "pred_k9":       round(pred_k9, 1),
-                    "pred_k_total":  round(pred_k_total, 1),
+                    "pred_k_total":  round(pred_per_start, 1),
                     "avg_ip":        round(avg_ip, 1),
                     "form_z":        round(feats.get("p_form_z", 0) or 0, 2),
                     "opp_kpct":      round(feats.get("opp_kpct", 0.22) or 0.22, 3),
