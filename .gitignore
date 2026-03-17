@@ -1,0 +1,13 @@
+notepad .gitignore
+```
+
+Paste this, save and close:
+```
+config.json
+saved_models/
+props_data/
+cache/
+*.xlsx
+__pycache__/
+*.pyc
+walk_forward_*.csv
