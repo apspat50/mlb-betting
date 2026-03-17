@@ -1,0 +1,61 @@
+name: Daily MLB Props Picks
+
+on:
+  schedule:
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+
+jobs:
+  send-picks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Cache model data
+        uses: actions/cache@v3
+        with:
+          path: |
+            props_data/
+            saved_models/
+          key: ${{ runner.os }}-models-v1
+
+      - name: Create config from secrets
+        run: |
+          cat > config.json << EOF
+          {
+            "telegram_token": "${{ secrets.TELEGRAM_TOKEN }}",
+            "chat_id": "${{ secrets.TELEGRAM_CHAT_ID }}",
+            "bankroll": 1000,
+            "min_edge": 0.06
+          }
+          EOF
+
+      - name: Train props model if needed
+        run: |
+          if [ ! -f "saved_models/props/pitcher_strikeouts.pkl" ]; then
+            echo "Training props model..."
+            python props_model.py --train --seasons 2014 2015 2016 2017 2018 2019 2020 2021
+          else
+            echo "Model exists, skipping training"
+          fi
+
+      - name: Run and send daily picks
+        run: python daily_picks.py
+        env:
+          PYTHONUNBUFFERED: "1"
