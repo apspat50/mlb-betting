@@ -179,11 +179,14 @@ def run_k_predictions(games: pd.DataFrame) -> list:
             build_pitcher_k_features,
             load_pitching_logs,
             load_team_batting_stats,
+            load_statcast_logs,
             predict_stat,
         )
         seasons  = list(range(2014, datetime.now().year + 1))
         pit_logs = load_pitching_logs(seasons)
         team_bat = load_team_batting_stats(seasons)
+        print("  Loading Statcast per-start logs...")
+        start_logs = load_statcast_logs(seasons, pit_logs)
     except Exception as e:
         print(f"  ⚠️  Could not load pitcher data: {e}")
         return []
@@ -201,7 +204,8 @@ def run_k_predictions(games: pd.DataFrame) -> list:
 
             try:
                 feats        = build_pitcher_k_features(
-                    pitcher, today, pit_logs, opp_team, team_bat, home_team
+                    pitcher, today, pit_logs, opp_team, team_bat, home_team,
+                    start_logs=start_logs,
                 )
                 # predict_stat returns per-start K rate (e.g. 6.5 Ks per start)
                 pred_per_start = predict_stat(model_pkg, feats)

@@ -32,6 +32,10 @@ Usage:
 """
 
 import warnings, time, argparse
+from statcast_logs import (
+    fetch_all_pitcher_logs, build_pitcher_rolling_features,
+    load_pitcher_id_map, STATCAST_FEATURE_COLS,
+)
 import numpy as np
 import pandas as pd
 import joblib
@@ -319,7 +323,8 @@ def build_pitcher_k_features(pitcher: str,
                                pitching_logs: pd.DataFrame,
                                opp_team_abbrev: str,
                                team_bat_stats: pd.DataFrame,
-                               home_team: str) -> dict:
+                               home_team: str,
+                               start_logs: pd.DataFrame = None) -> dict:
     """
     Build features for pitcher strikeout prediction.
 
@@ -432,6 +437,11 @@ def build_pitcher_k_features(pitcher: str,
                 probs = [x/total for x in pitches]
                 entropy = -sum(p*np.log(p+1e-10) for p in probs)
                 f["p_pitch_entropy"] = entropy
+
+    # ── Statcast per-start rolling features ──
+    if start_logs is not None and not start_logs.empty:
+        sc_feats = build_pitcher_rolling_features(pitcher, gd, start_logs)
+        f.update(sc_feats)
 
     # ── Game context ──
     f["ctx_park"]        = PARK_FACTORS.get(home_team, 1.0)
@@ -571,7 +581,8 @@ def build_training_dataset(prop_type: str,
                             batting_logs: pd.DataFrame,
                             pitching_logs: pd.DataFrame,
                             team_bat_stats: pd.DataFrame,
-                            team_pit_stats: pd.DataFrame) -> pd.DataFrame:
+                            team_pit_stats: pd.DataFrame,
+                            start_logs: pd.DataFrame = None) -> pd.DataFrame:
     """
     Build a regression training dataset for one prop type.
     Each row = one player game appearance with:
@@ -641,10 +652,13 @@ def build_training_dataset(prop_type: str,
             )
 
             if is_pit:
+                sc_prior = start_logs[start_logs["season"] < season] \
+                    if start_logs is not None and not start_logs.empty else None
                 feats = build_pitcher_k_features(
                     player, gdate,
                     prior_pit if not prior_pit.empty else pitching_logs,
-                    team, team_bat_stats, team
+                    team, team_bat_stats, team,
+                    start_logs=sc_prior,
                 )
             else:
                 feats = build_batter_features(
@@ -699,13 +713,28 @@ def get_feat_cols(df: pd.DataFrame) -> list:
         "date","player","season","team","actual","total","gs",
         "G","GS","PA","AB",
     }
-    SAFE_PREFIXES = ("p_","bat_","opp_","ctx_","power_")
+    SAFE_PREFIXES = ("p_","bat_","opp_","ctx_","power_","sc_")
     return [
         c for c in df.columns
         if c not in LEAK_COLS
         and any(c.startswith(pfx) for pfx in SAFE_PREFIXES)
         and df[c].dtype in [np.float64, np.int64, float, int]
     ]
+
+
+def load_statcast_logs(seasons: list,
+                       pitching_logs: pd.DataFrame) -> pd.DataFrame:
+    """Load or download per-start Statcast logs for all pitchers."""
+    cache_file = DATA_DIR / f"all_starts_{'_'.join(map(str,seasons))}.parquet"
+    if cache_file.exists():
+        print("  📂 Per-start Statcast logs from cache")
+        df = pd.read_parquet(cache_file)
+        df["game_date"] = pd.to_datetime(df["game_date"])
+        return df
+    print("  Building pitcher ID map...")
+    id_map = load_pitcher_id_map(pitching_logs)
+    pitchers = pitching_logs["Name"].dropna().unique().tolist()
+    return fetch_all_pitcher_logs(pitchers, id_map, seasons)
 
 
 def train_prop_model(train_df: pd.DataFrame,
@@ -1089,9 +1118,14 @@ def predict_prop_vs_line(prop_type: str,
     # Build features
     gd = pd.Timestamp(game_date)
     if cfg["log_type"] == "pitching":
+        start_logs = load_statcast_logs(
+            list(range(2014, pd.Timestamp(game_date).year + 1)),
+            pitching_logs
+        )
         feats = build_pitcher_k_features(
             player, gd, pitching_logs, opp_team,
-            team_bat_stats, home_team
+            team_bat_stats, home_team,
+            start_logs=start_logs,
         )
     else:
         feats = build_batter_features(
@@ -1181,9 +1215,13 @@ if __name__ == "__main__":
         team_bat = load_team_batting_stats(args.seasons)
         team_pit = load_team_pitching_stats(args.seasons)
 
+        print("\n  Loading Statcast per-start logs (downloads ~500MB on first run)...")
+        start_logs = load_statcast_logs(args.seasons, pitching)
+
         for pt in PROP_CONFIGS:
             df = build_training_dataset(
-                pt, batting, pitching, team_bat, team_pit
+                pt, batting, pitching, team_bat, team_pit,
+                start_logs=start_logs if pt == "pitcher_strikeouts" else None
             )
             if not df.empty:
                 train_prop_model(df, pt)
