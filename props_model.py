@@ -1118,14 +1118,16 @@ def predict_prop_vs_line(prop_type: str,
     # Build features
     gd = pd.Timestamp(game_date)
     if cfg["log_type"] == "pitching":
-        start_logs = load_statcast_logs(
-            list(range(2014, pd.Timestamp(game_date).year + 1)),
-            pitching_logs
-        )
+        # Use live fetch — only pulls last 45 days for this pitcher
+        from statcast_logs import fetch_recent_starts
+        print(f"  Fetching recent starts for {player}...")
+        start_logs = fetch_recent_starts(player, days_back=45)
+        if not start_logs.empty:
+            start_logs["name"] = player
         feats = build_pitcher_k_features(
             player, gd, pitching_logs, opp_team,
             team_bat_stats, home_team,
-            start_logs=start_logs,
+            start_logs=start_logs if not start_logs.empty else None,
         )
     else:
         feats = build_batter_features(
