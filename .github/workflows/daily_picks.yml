@@ -27,6 +27,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Get today's date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Restore Statcast pitcher cache
+        uses: actions/cache@v3
+        with:
+          path: cache/statcast/
+          key: ${{ runner.os }}-statcast-pit-${{ steps.date.outputs.date }}
+          restore-keys: |
+            ${{ runner.os }}-statcast-pit-
+
       - name: Cache model data
         uses: actions/cache@v3
         with:
@@ -59,3 +71,9 @@ jobs:
         run: python daily_picks.py
         env:
           PYTHONUNBUFFERED: "1"
+
+      - name: Save Statcast pitcher cache
+        uses: actions/cache@v3
+        with:
+          path: cache/statcast/
+          key: ${{ runner.os }}-statcast-pit-${{ steps.date.outputs.date }}

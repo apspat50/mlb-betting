@@ -31,7 +31,7 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Restore batter cache
+      - name: Restore batter Statcast cache
         uses: actions/cache@v3
         with:
           path: cache/statcast_bat/
@@ -39,11 +39,66 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-statcast-bat-
 
+      - name: Restore pitcher Statcast cache
+        uses: actions/cache@v3
+        with:
+          path: cache/statcast/
+          key: ${{ runner.os }}-statcast-pit-${{ steps.date.outputs.date }}
+          restore-keys: |
+            ${{ runner.os }}-statcast-
+
       - name: Create config from secrets
         run: |
           echo '{"telegram_token":"${{ secrets.TELEGRAM_TOKEN }}","chat_id":"${{ secrets.TELEGRAM_CHAT_ID }}","bankroll":1000,"min_edge":0.06}' > config.json
 
-      - name: Run batter picks and send to Telegram
+      - name: Fetch pitcher Statcast + send batter picks
+        run: |
+          python - << 'EOF'
+          import requests, json
+          from daily_picks import fetch_todays_games
+          from statcast_logs import fetch_todays_pitcher_starts
+          from statcast_batters import fetch_todays_batter_games, get_top_batters_for_team
+          from datetime import datetime
+
+          def send_telegram(msg):
+              cfg = json.load(open("config.json"))
+              try:
+                  requests.post(
+                      f"https://api.telegram.org/bot{cfg['telegram_token']}/sendMessage",
+                      json={"chat_id": cfg["chat_id"], "text": msg},
+                      timeout=10,
+                  )
+              except: pass
+
+          print("Fetching today's games...")
+          games = fetch_todays_games()
+          if games.empty:
+              send_telegram("⚾ No MLB games today")
+              exit()
+
+          date_str = datetime.now().strftime("%Y-%m-%d")
+
+          # Fetch pitcher Statcast (so noon picks have fresh data)
+          pitchers = [g for _, row in games.iterrows()
+                      for g in [row.get("home_sp",""), row.get("away_sp","")]
+                      if g and g != "TBD"]
+          print(f"Fetching Statcast for {len(pitchers)} pitchers...")
+          fetch_todays_pitcher_starts(pitchers, days_back=45)
+
+          # Fetch batter Statcast
+          batters = []
+          for _, g in games.iterrows():
+              for team in [g["home_team"], g["away_team"]]:
+                  batters.extend(get_top_batters_for_team(team, date_str, n=3))
+          batters = list(set(b for b in batters if b and b != "TBD"))
+          print(f"Fetching Statcast for {len(batters)} batters...")
+          fetch_todays_batter_games(batters, days_back=30)
+          print("Cache built!")
+          EOF
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Send batter picks
         run: python daily_batter_picks.py
         env:
           PYTHONUNBUFFERED: "1"
@@ -53,3 +108,9 @@ jobs:
         with:
           path: cache/statcast_bat/
           key: ${{ runner.os }}-statcast-bat-${{ steps.date.outputs.date }}
+
+      - name: Save pitcher cache
+        uses: actions/cache@v3
+        with:
+          path: cache/statcast/
+          key: ${{ runner.os }}-statcast-pit-${{ steps.date.outputs.date }}
