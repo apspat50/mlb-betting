@@ -7,7 +7,7 @@ What it does:
 1. Fetches today's MLB games and starting pitchers (ESPN, free)
 2. Fetches recent Statcast per-start data for each pitcher
 3. Predicts Ks using Statcast rolling averages (sc_k_L3, sc_k_L5)
-4. Compares to FanDuel line and sends to Telegram
+4. Sends predictions to Telegram -- compare to FanDuel manually
 
 Usage:
   python daily_picks.py            # today's picks + send to Telegram
@@ -20,7 +20,6 @@ import json
 import warnings
 import argparse
 import requests
-from fanduel_scraper import get_todays_k_props, match_pitcher_line
 
 import numpy as np
 import pandas as pd
@@ -204,7 +203,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
         if g.get("away_sp") and g["away_sp"] != "TBD":
             todays_pitchers.append(g["away_sp"])
 
-    # Fetch recent Statcast starts -- this is the primary data source
+    # Fetch recent Statcast starts -- primary data source
     print("  Fetching recent Statcast starts for {} pitchers...".format(
         len(todays_pitchers)
     ))
@@ -242,7 +241,6 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 data_source = "unknown"
 
                 if sc_k_L3 is not None and sc_k_L5 is not None:
-                    # Weighted blend: 60% last 3 starts, 40% last 5 starts
                     pred_per_start = sc_k_L3 * 0.6 + sc_k_L5 * 0.4
                     data_source    = "Statcast (L3={:.1f}, L5={:.1f})".format(
                         sc_k_L3, sc_k_L5
@@ -253,7 +251,6 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     data_source    = "Statcast season avg ({:.1f})".format(sc_k_season)
 
                 elif model_pkg is not None:
-                    # Fallback: trained model with proper GS estimate
                     pred_per_start = predict_stat(model_pkg, feats)
                     if pred_per_start > 20:
                         season_ip = feats.get("p_ip_L3")
@@ -265,21 +262,19 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     data_source = "model fallback (no Statcast)"
 
                 else:
-                    print("    {}: no Statcast or model data -- skipping".format(pitcher))
+                    print("    {}: no data -- skipping".format(pitcher))
                     continue
 
                 print("    {}: {} -> {:.1f} K/start".format(
                     pitcher, data_source, pred_per_start
                 ))
 
-                # IP and K/9
                 avg_ip = feats.get("sc_ip_L3")
                 if not avg_ip or avg_ip > 10 or avg_ip < 1:
                     avg_ip = 5.5
                 avg_ip  = round(float(avg_ip), 1)
                 pred_k9 = pred_per_start / avg_ip * 9
 
-                # Prefer Statcast form score over season-log form score
                 form_z   = feats.get("sc_form_z") or feats.get("p_form_z") or 0
                 opp_kpct = feats.get("opp_kpct", 0.22) or 0.22
 
@@ -296,23 +291,11 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     "form_z":       round(form_z, 2),
                     "opp_kpct":     round(opp_kpct, 3),
                     "data_source":  data_source,
-                    "fd_line":      None,
                 })
 
             except Exception as e:
                 print("    {}: error -- {}".format(pitcher, e))
                 continue
-
-    # Fetch FanDuel lines and attach
-    if predictions:
-        print("  Fetching FanDuel K prop lines...")
-        fd_props = get_todays_k_props()
-        for p in predictions:
-            fd = match_pitcher_line(fd_props, p["pitcher"])
-            if fd:
-                p["fd_line"]       = fd.get("line")
-                p["fd_over_odds"]  = fd.get("over_odds",  -110)
-                p["fd_under_odds"] = fd.get("under_odds", -110)
 
     return predictions
 
@@ -322,15 +305,12 @@ def run_k_predictions(games: pd.DataFrame) -> list:
 # ======================================================
 
 def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
-    today    = datetime.now().strftime("%B %d, %Y")
-    bankroll = config.get("bankroll", 1000)
+    today = datetime.now().strftime("%B %d, %Y")
 
     lines = ["<b>MLB Pitcher K Props -- {}</b>".format(today)]
+    lines.append("<i>Statcast rolling averages -- compare to FanDuel manually</i>\n")
 
     if predictions:
-        lines.append("\n<b>K Predictions ({} starters)</b>".format(len(predictions)))
-        lines.append("<i>Statcast rolling averages vs FanDuel line</i>\n")
-
         predictions.sort(key=lambda x: x["pred_k_total"], reverse=True)
 
         for p in predictions:
@@ -350,45 +330,21 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
             else:
                 opp_str = ""
 
-            fd_line = p.get("fd_line")
-            if fd_line:
-                predicted = p["pred_k_total"]
-                diff      = predicted - fd_line
-                if diff < -0.4:
-                    bet_str = "\n   BET UNDER {} (model:{} vs FD:{})".format(
-                        fd_line, predicted, fd_line
-                    )
-                elif diff > 0.4:
-                    bet_str = "\n   BET OVER {} (model:{} vs FD:{})".format(
-                        fd_line, predicted, fd_line
-                    )
-                else:
-                    bet_str = "\n   No edge (model:{} vs FD:{})".format(
-                        predicted, fd_line
-                    )
-            else:
-                bet_str = "\n   FD line not found -- predicted {} Ks".format(
-                    p["pred_k_total"]
-                )
-
             lines.append(
                 "<b>{}</b> ({}){}\n"
                 "   {} @ {} | {}\n"
-                "   Predicted: <b>{} Ks</b> ({} K/9 x {} IP){}"
-                "{}".format(
+                "   Predicted: <b>{} Ks</b> ({} K/9 x {} IP){}\n".format(
                     p["pitcher"], p["role"], form_str,
                     p["away_team"], p["home_team"], p["time"],
                     p["pred_k_total"], p["pred_k9"], p["avg_ip"], opp_str,
-                    bet_str,
                 )
             )
-            lines.append("")
     else:
-        lines.append("\nNo predictions available")
-        lines.append("Statcast data may not be available yet for today's starters.")
+        lines.append("No predictions available.")
+        lines.append("Statcast data may not be ready yet for today's starters.")
 
     if not games.empty:
-        lines.append("\n<b>{} Games Today</b>".format(len(games)))
+        lines.append("<b>{} Games Today</b>".format(len(games)))
         for _, g in games.iterrows():
             lines.append("  {:>9} {} @ {}".format(
                 g["time"], g["away_team"][:14], g["home_team"][:14]
@@ -433,17 +389,16 @@ def main():
         predictions_sorted = sorted(
             predictions, key=lambda x: x["pred_k_total"], reverse=True
         )
-        print("  {:<25} {:<28} {:>8} {:>6} {}".format(
-            "PITCHER", "MATCHUP", "PRED Ks", "K/9", "SOURCE"
+        print("  {:<25} {:<28} {:>8} {:>6}".format(
+            "PITCHER", "MATCHUP", "PRED Ks", "K/9"
         ))
-        print("  " + "-" * 58)
+        print("  " + "-" * 55)
         for p in predictions_sorted:
             matchup = "{} @ {}".format(p["away_team"][:11], p["home_team"][:11])
             form    = " HOT" if p.get("form_z", 0) > 1.5 else (
                       " COLD" if p.get("form_z", 0) < -1.5 else "")
-            src     = "SC" if "Statcast" in p.get("data_source", "") else "model"
-            print("  {:<25} {:<28} {:>7.1f} {:>5.1f}{}  [{}]".format(
-                p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form, src
+            print("  {:<25} {:<28} {:>7.1f} {:>5.1f}{}".format(
+                p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form
             ))
     print("=" * 60 + "\n")
 
@@ -453,8 +408,8 @@ def main():
         send_telegram(message, config["telegram_token"], config["chat_id"])
     else:
         print("(--no-send: Telegram skipped)")
-        print("\n--- MESSAGE PREVIEW ---")
         import re
+        print("\n--- MESSAGE PREVIEW ---")
         print(re.sub(r"<[^>]+>", "", message))
 
 
