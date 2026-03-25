@@ -179,14 +179,30 @@ def run_k_predictions(games: pd.DataFrame) -> list:
             build_pitcher_k_features,
             load_pitching_logs,
             load_team_batting_stats,
-            load_statcast_logs,
             predict_stat,
         )
+        from statcast_logs import fetch_todays_pitcher_starts
+
         seasons  = list(range(2014, datetime.now().year + 1))
         pit_logs = load_pitching_logs(seasons)
         team_bat = load_team_batting_stats(seasons)
-        print("  Loading Statcast per-start logs...")
-        start_logs = load_statcast_logs(seasons, pit_logs)
+
+        # Get all pitchers scheduled today
+        todays_pitchers = []
+        for _, g in games.iterrows():
+            if g.get("home_sp") and g["home_sp"] != "TBD":
+                todays_pitchers.append(g["home_sp"])
+            if g.get("away_sp") and g["away_sp"] != "TBD":
+                todays_pitchers.append(g["away_sp"])
+
+        # Fetch only recent starts for today's pitchers — fast, ~30 seconds
+        print(f"  Fetching recent Statcast starts for {len(todays_pitchers)} pitchers...")
+        start_logs = fetch_todays_pitcher_starts(todays_pitchers, days_back=45)
+
+        if start_logs.empty:
+            print("  ⚠️  No Statcast data — using season averages")
+            start_logs = None
+
     except Exception as e:
         print(f"  ⚠️  Could not load pitcher data: {e}")
         return []

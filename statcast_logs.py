@@ -513,3 +513,129 @@ if __name__ == "__main__":
             for k, v in sorted(feats.items()):
                 print(f"  {k:<25} {v:.3f}" if isinstance(v, float) else
                       f"  {k:<25} {v}")
+
+
+# ══════════════════════════════════════════════
+# LIVE DAILY FETCH — only pulls recent starts
+# for pitchers scheduled to pitch today
+# ══════════════════════════════════════════════
+
+def fetch_recent_starts(pitcher_name: str,
+                         days_back: int = 45) -> pd.DataFrame:
+    """
+    Fetch only the last N days of Statcast data for one pitcher.
+    Fast — pulls a few thousand rows instead of millions.
+    Used for live daily predictions.
+
+    Args:
+        pitcher_name: Full name e.g. "Gerrit Cole"
+        days_back:    How many days to look back (default 45 = ~7-8 starts)
+
+    Returns:
+        DataFrame with one row per recent start, same format as
+        fetch_pitcher_season_logs() output.
+    """
+    from datetime import datetime, timedelta
+
+    pid = get_pitcher_id(pitcher_name)
+    if pid == 0:
+        return pd.DataFrame()
+
+    end_dt   = datetime.now()
+    start_dt = end_dt - timedelta(days=days_back)
+
+    # Check cache — don't re-fetch if we already got it today
+    cache_key = f"recent_{pid}_{end_dt.strftime('%Y%m%d')}"
+    cache_file = CACHE_DIR / f"{cache_key}.parquet"
+
+    if cache_file.exists():
+        df = pd.read_parquet(cache_file)
+        df["game_date"] = pd.to_datetime(df["game_date"])
+        return df
+
+    try:
+        import pybaseball as pyb
+        pyb.cache.enable()
+
+        raw = pyb.statcast_pitcher(
+            start_dt = start_dt.strftime("%Y-%m-%d"),
+            end_dt   = end_dt.strftime("%Y-%m-%d"),
+            player_id= pid,
+        )
+
+        if raw is None or raw.empty:
+            return pd.DataFrame()
+
+        starts = aggregate_to_starts(raw, pid, end_dt.year)
+        starts["name"] = pitcher_name
+
+        if not starts.empty:
+            starts.to_parquet(cache_file, index=False)
+
+        return starts
+
+    except Exception as e:
+        print(f"  ⚠️  Could not fetch recent starts for {pitcher_name}: {e}")
+        return pd.DataFrame()
+
+
+def fetch_todays_pitcher_starts(pitcher_names: list,
+                                 days_back: int = 45) -> pd.DataFrame:
+    """
+    Fetch recent starts for all pitchers scheduled today.
+    Runs in seconds — only pulls data for the 10-16 pitchers
+    actually pitching today, not all 500+ in the league.
+
+    Args:
+        pitcher_names: List of pitcher names from ESPN schedule
+        days_back:     How many days of history to fetch
+
+    Returns:
+        Combined DataFrame of recent starts for all pitchers,
+        ready to pass to build_pitcher_rolling_features()
+    """
+    all_starts = []
+    n = len(pitcher_names)
+
+    print(f"  Fetching recent starts for {n} pitchers...")
+
+    for i, name in enumerate(pitcher_names):
+        if not name or name == "TBD":
+            continue
+
+        print(f"  [{i+1}/{n}] {name}...", end=" ")
+        starts = fetch_recent_starts(name, days_back)
+
+        if not starts.empty:
+            all_starts.append(starts)
+            print(f"{len(starts)} starts found")
+        else:
+            print("no data")
+
+    if not all_starts:
+        return pd.DataFrame()
+
+    combined = pd.concat(all_starts, ignore_index=True)
+    combined["game_date"] = pd.to_datetime(combined["game_date"])
+    return combined.sort_values(["name", "game_date"]).reset_index(drop=True)
+
+
+def get_pitcher_features_live(pitcher_name: str,
+                               game_date=None,
+                               days_back: int = 45) -> dict:
+    """
+    Get rolling Statcast features for a pitcher using only
+    recent starts fetched today. This is the main function
+    for live daily predictions.
+
+    Much faster than loading the full historical cache.
+    """
+    from datetime import datetime
+    if game_date is None:
+        game_date = datetime.now()
+
+    starts = fetch_recent_starts(pitcher_name, days_back)
+    if starts.empty:
+        return {}
+
+    return build_pitcher_rolling_features(pitcher_name, game_date, starts)
