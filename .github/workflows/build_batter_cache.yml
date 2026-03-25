@@ -1,0 +1,55 @@
+name: Build Batter Cache
+
+on:
+  schedule:
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+
+jobs:
+  build-cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Get today's date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Restore batter cache
+        uses: actions/cache@v3
+        with:
+          path: cache/statcast_bat/
+          key: ${{ runner.os }}-statcast-bat-${{ steps.date.outputs.date }}
+          restore-keys: |
+            ${{ runner.os }}-statcast-bat-
+
+      - name: Create config from secrets
+        run: |
+          echo '{"telegram_token":"${{ secrets.TELEGRAM_TOKEN }}","chat_id":"${{ secrets.TELEGRAM_CHAT_ID }}","bankroll":1000,"min_edge":0.06}' > config.json
+
+      - name: Run batter picks and send to Telegram
+        run: python daily_batter_picks.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Save batter cache
+        uses: actions/cache@v3
+        with:
+          path: cache/statcast_bat/
+          key: ${{ runner.os }}-statcast-bat-${{ steps.date.outputs.date }}
