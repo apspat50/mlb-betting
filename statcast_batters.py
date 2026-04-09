@@ -466,36 +466,85 @@ def predict_batter_props(batter_name: str,
 
     park_f = parks.get(home_team, 1.0)
 
-    # Weighted prediction: more weight to recent games
-    def weighted_pred(recent, season, w_recent=0.7):
-        if pd.isna(recent) or pd.isna(season):
-            return recent or season or 0
-        return recent * w_recent + season * (1 - w_recent)
+    def safe(v):
+        return float(v) if v is not None and not pd.isna(v) else None
 
-    pred_h  = weighted_pred(
-        feats.get("bat_h_L7"),
-        feats.get("bat_h_season")
-    )
-    pred_tb = weighted_pred(
-        feats.get("bat_tb_L7"),
-        feats.get("bat_tb_season")
-    )
-    pred_hr = weighted_pred(
-        feats.get("bat_hr_L15"),
-        feats.get("bat_hr_season")
-    )
+    # ── Hits prediction ──
+    # Blend rolling avg with xBA (expected BA from Statcast) for stability
+    h_l7    = safe(feats.get("bat_h_L7"))
+    h_l15   = safe(feats.get("bat_h_L15"))
+    h_szn   = safe(feats.get("bat_h_season"))
+    xba_l7  = safe(feats.get("bat_xba_L7"))
 
-    # Apply park factor to power stats
-    if pred_tb is not None:
-        pred_tb = pred_tb * park_f
-    if pred_hr is not None:
-        pred_hr = pred_hr * park_f
+    # Base: weight L7 > L15 > season
+    h_base = None
+    if h_l7 is not None and h_l15 is not None and h_szn is not None:
+        h_base = h_l7 * 0.50 + h_l15 * 0.30 + h_szn * 0.20
+    elif h_l7 is not None and h_szn is not None:
+        h_base = h_l7 * 0.70 + h_szn * 0.30
+    elif h_szn is not None:
+        h_base = h_szn
 
-    # Apply handedness adjustment if we have splits
-    if f"bat_h_vs_hand_L20" in feats:
-        vs_hand = feats["bat_h_vs_hand_L20"]
-        season  = feats.get("bat_h_season", vs_hand)
-        pred_h  = vs_hand * 0.6 + season * 0.4
+    # xBA nudge: if xBA suggests batter is over- or under-performing BABIP
+    # Convert xBA to expected H/game using avg ~3.8 AB/game
+    if xba_l7 is not None and h_base is not None:
+        xh_estimate = xba_l7 * 3.8
+        h_base = h_base * 0.75 + xh_estimate * 0.25
+
+    # Handedness split adjustment
+    if "bat_h_vs_hand_L20" in feats and h_szn is not None:
+        vs_hand = safe(feats["bat_h_vs_hand_L20"])
+        if vs_hand is not None:
+            h_base = vs_hand * 0.55 + (h_base or h_szn) * 0.45
+
+    pred_h = h_base
+
+    # ── Total Bases prediction ──
+    tb_l7   = safe(feats.get("bat_tb_L7"))
+    tb_l15  = safe(feats.get("bat_tb_L15"))
+    tb_szn  = safe(feats.get("bat_tb_season"))
+    xslg_l7 = safe(feats.get("bat_xslg_L7"))
+    barrel  = safe(feats.get("bat_barrel_L10"))
+
+    tb_base = None
+    if tb_l7 is not None and tb_l15 is not None and tb_szn is not None:
+        tb_base = tb_l7 * 0.50 + tb_l15 * 0.30 + tb_szn * 0.20
+    elif tb_l7 is not None and tb_szn is not None:
+        tb_base = tb_l7 * 0.70 + tb_szn * 0.30
+    elif tb_szn is not None:
+        tb_base = tb_szn
+
+    # xSLG nudge: converts to expected TB/game (~3.8 AB/game)
+    if xslg_l7 is not None and tb_base is not None:
+        xtb_estimate = xslg_l7 * 3.8
+        tb_base = tb_base * 0.70 + xtb_estimate * 0.30
+
+    # Barrel% boost for power (league avg barrel ~7%)
+    if barrel is not None and tb_base is not None:
+        barrel_adj = 1.0 + np.clip((barrel - 0.07) * 2.0, -0.10, 0.15)
+        tb_base = tb_base * barrel_adj
+
+    pred_tb = (tb_base * park_f) if tb_base is not None else None
+
+    # ── Home Runs prediction ──
+    hr_l15  = safe(feats.get("bat_hr_L15"))
+    hr_l30  = safe(feats.get("bat_hr_L30"))
+    hr_szn  = safe(feats.get("bat_hr_season"))
+
+    hr_base = None
+    if hr_l15 is not None and hr_l30 is not None and hr_szn is not None:
+        hr_base = hr_l15 * 0.45 + hr_l30 * 0.30 + hr_szn * 0.25
+    elif hr_l15 is not None and hr_szn is not None:
+        hr_base = hr_l15 * 0.60 + hr_szn * 0.40
+    elif hr_szn is not None:
+        hr_base = hr_szn
+
+    # Barrel% is the best HR predictor — heavier adjustment for HR
+    if barrel is not None and hr_base is not None:
+        barrel_adj = 1.0 + np.clip((barrel - 0.07) * 3.5, -0.15, 0.25)
+        hr_base = hr_base * barrel_adj
+
+    pred_hr = (hr_base * park_f) if hr_base is not None else None
 
     return {
         "pred_h":     round(pred_h, 2)  if pred_h  is not None else None,

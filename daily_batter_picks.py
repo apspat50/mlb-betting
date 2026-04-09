@@ -11,6 +11,7 @@ Usage:
 """
 
 import json
+import subprocess
 import warnings
 import argparse
 import requests
@@ -18,6 +19,9 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+
+PREDICTIONS_DIR = Path("predictions")
+PREDICTIONS_DIR.mkdir(exist_ok=True)
 
 warnings.filterwarnings("ignore")
 
@@ -251,6 +255,45 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+def save_batter_predictions(predictions: list, date_str: str) -> Path:
+    """Merge batter predictions into predictions/YYYY-MM-DD.json."""
+    filepath = PREDICTIONS_DIR / f"{date_str}.json"
+
+    existing = {}
+    if filepath.exists():
+        try:
+            existing = json.load(open(filepath))
+        except Exception:
+            existing = {}
+
+    existing["date"]    = date_str
+    existing["batters"] = predictions
+
+    json.dump(existing, open(filepath, "w"), indent=2, default=str)
+    print("  Saved batter predictions → {}".format(filepath))
+    return filepath
+
+
+def git_push_predictions(filepath: Path):
+    """Commit and push the predictions file to GitHub."""
+    try:
+        subprocess.run(["git", "add", str(filepath)], check=True, capture_output=True)
+        result = subprocess.run(
+            ["git", "commit", "-m", "predictions: {}".format(filepath.stem)],
+            capture_output=True, text=True
+        )
+        if "nothing to commit" in result.stdout:
+            print("  No changes to commit")
+            return
+        subprocess.run(
+            ["git", "push", "-u", "origin", "HEAD"],
+            check=True, capture_output=True
+        )
+        print("  Pushed predictions to GitHub")
+    except subprocess.CalledProcessError as e:
+        print("  Git push failed: {}".format(e))
+
+
 def main():
     parser = argparse.ArgumentParser(description="Daily Batter Props")
     parser.add_argument("--no-send", action="store_true")
@@ -290,6 +333,10 @@ def main():
                   f"{p['pred_tb']:>6.2f} "
                   f"{p['pred_hr']:>6.3f}{form}")
     print(f"{'═'*55}\n")
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filepath = save_batter_predictions(predictions, date_str)
+    git_push_predictions(filepath)
 
     message = build_message(predictions, games)
 

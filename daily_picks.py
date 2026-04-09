@@ -17,6 +17,7 @@ Usage:
 """
 
 import json
+import subprocess
 import warnings
 import argparse
 import requests
@@ -26,6 +27,9 @@ import pandas as pd
 import joblib
 from pathlib import Path
 from datetime import datetime, timedelta
+
+PREDICTIONS_DIR = Path("predictions")
+PREDICTIONS_DIR.mkdir(exist_ok=True)
 
 warnings.filterwarnings("ignore")
 
@@ -241,9 +245,30 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 data_source = "unknown"
 
                 if sc_k_L3 is not None and sc_k_L5 is not None:
-                    pred_per_start = sc_k_L3 * 0.6 + sc_k_L5 * 0.4
-                    data_source    = "Statcast (L3={:.1f}, L5={:.1f})".format(
-                        sc_k_L3, sc_k_L5
+                    # Base: weighted rolling K average (recent weighted heavier)
+                    base_k = sc_k_L3 * 0.6 + sc_k_L5 * 0.4
+
+                    # SwStr% adjustment vs league avg (~10.5%)
+                    # Higher whiff rate = pitcher is missing more bats than history shows
+                    sc_swstr = feats.get("sc_swstr_L3")
+                    if sc_swstr and not np.isnan(float(sc_swstr)):
+                        swstr_factor = float(sc_swstr) / 0.105
+                        # Dampen: don't let swstr move prediction more than ±12%
+                        swstr_adj = max(0.88, min(1.12, 0.5 + swstr_factor * 0.5))
+                    else:
+                        swstr_adj = 1.0
+
+                    # Opponent K% adjustment vs league avg (~22.2%)
+                    opp_kpct_val = feats.get("opp_kpct", 0.222) or 0.222
+                    opp_adj = max(0.90, min(1.10, float(opp_kpct_val) / 0.222))
+
+                    # Velocity trend: losing velo → fewer Ks
+                    velo_trend = feats.get("sc_velo_trend", 0) or 0
+                    velo_adj = 1.0 + np.clip(float(velo_trend) * 0.015, -0.06, 0.06)
+
+                    pred_per_start = base_k * swstr_adj * opp_adj * velo_adj
+                    data_source    = "Statcast (L3={:.1f} L5={:.1f} SwStr={:.1%} OppK={:.1%})".format(
+                        sc_k_L3, sc_k_L5, sc_swstr or 0.105, opp_kpct_val
                     )
 
                 elif sc_k_season is not None:
@@ -355,6 +380,50 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
 
 
 # ======================================================
+# SAVE PREDICTIONS + GIT PUSH
+# ======================================================
+
+def save_pitcher_predictions(predictions: list, date_str: str) -> Path:
+    """Save pitcher predictions to predictions/YYYY-MM-DD.json."""
+    filepath = PREDICTIONS_DIR / f"{date_str}.json"
+
+    # Load existing file so batter predictions aren't overwritten
+    existing = {}
+    if filepath.exists():
+        try:
+            existing = json.load(open(filepath))
+        except Exception:
+            existing = {}
+
+    existing["date"]     = date_str
+    existing["pitchers"] = predictions
+
+    json.dump(existing, open(filepath, "w"), indent=2, default=str)
+    print("  Saved predictions → {}".format(filepath))
+    return filepath
+
+
+def git_push_predictions(filepath: Path):
+    """Commit and push the predictions file to GitHub."""
+    try:
+        subprocess.run(["git", "add", str(filepath)], check=True, capture_output=True)
+        result = subprocess.run(
+            ["git", "commit", "-m", "predictions: {}".format(filepath.stem)],
+            capture_output=True, text=True
+        )
+        if "nothing to commit" in result.stdout:
+            print("  No changes to commit")
+            return
+        subprocess.run(
+            ["git", "push", "-u", "origin", "HEAD"],
+            check=True, capture_output=True
+        )
+        print("  Pushed predictions to GitHub")
+    except subprocess.CalledProcessError as e:
+        print("  Git push failed: {}".format(e))
+
+
+# ======================================================
 # MAIN
 # ======================================================
 
@@ -401,6 +470,13 @@ def main():
                 p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form
             ))
     print("=" * 60 + "\n")
+
+    date_str = (
+        args.date if args.date
+        else datetime.now().strftime("%Y-%m-%d")
+    )
+    filepath = save_pitcher_predictions(predictions, date_str)
+    git_push_predictions(filepath)
 
     message = build_message(games, predictions, config)
 
