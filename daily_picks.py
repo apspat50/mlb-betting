@@ -230,7 +230,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
     mlb_k_logs = fetch_mlb_k_logs_for_pitchers(todays_pitchers)
 
     # Fetch season aggregate stats — most reliable K/start baseline
-    cur_year = today.year
+    cur_year = datetime.now().year
     print("  Fetching MLB season stats ({}/{})...".format(cur_year, cur_year - 1))
     mlb_season_stats = fetch_mlb_season_stats_for_pitchers(
         todays_pitchers, seasons=[cur_year, cur_year - 1]
