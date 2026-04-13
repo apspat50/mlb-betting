@@ -284,8 +284,23 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     k_base  = None
                     ip_base = None
 
+                # Sanity check season stats — reject anything outside plausible range
+                # (real starters: 2.5–11 K/start; 3–8 IP/start)
+                if k_base is not None and not (2.0 <= k_base <= 11.0):
+                    k_base = None
+                if ip_base is not None and not (3.0 <= ip_base <= 9.0):
+                    ip_base = None
+
+                # Fallback: compute K baseline from game log data
+                # Used when season stats are unavailable or rejected
+                if k_base is None and mlb_logs is not None and not mlb_logs.empty:
+                    past_all = mlb_logs[mlb_logs["game_date"] < today]
+                    if len(past_all) >= 5:
+                        k_base  = float(past_all["SO"].mean())
+                        ip_base = float(past_all["IP"].mean())
+
                 if k_base is not None:
-                    # Adjust for recent form using game logs
+                    # Adjust for recent form using game logs (±25% max)
                     if mlb_logs is not None and not mlb_logs.empty:
                         past = mlb_logs[mlb_logs["game_date"] < today]
                         if len(past) >= 3:
@@ -296,7 +311,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     feats["sc_k_L3"]     = k_base
                     feats["sc_k_L5"]     = k_base
                     feats["sc_k_season"] = k_base
-                    feats["sc_ip_L3"]    = ip_base
+                    feats["sc_ip_L3"]    = ip_base or 5.5
 
                 # -- STATCAST-FIRST PREDICTION --
                 sc_k_L3     = feats.get("sc_k_L3")
@@ -354,14 +369,16 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     pitcher, data_source, pred_per_start
                 ))
 
+                # Hard cap on K total — no starter realistically gets 13+ Ks
+                pred_per_start = min(pred_per_start, 13.0)
+
                 avg_ip = feats.get("sc_ip_L3")
-                if not avg_ip or avg_ip > 10 or avg_ip < 1:
+                if not avg_ip or avg_ip > 9 or avg_ip < 1:
                     avg_ip = 5.5
                 avg_ip  = round(float(avg_ip), 1)
                 pred_k9 = pred_per_start / avg_ip * 9
 
                 # Sanity cap: no starter realistically averages > 12 K/9
-                # If K/9 is too high, IP estimate is too low — recalculate
                 if pred_k9 > 12.0:
                     avg_ip = round(pred_per_start / 12.0 * 9, 1)
                     pred_k9 = 12.0

@@ -641,12 +641,20 @@ def fetch_todays_pitcher_starts(pitcher_names: list,
 # ══════════════════════════════════════════════
 
 def _parse_ip(ip_val) -> float:
-    """Convert baseball IP notation (5.1 = 5⅓) to decimal innings."""
+    """
+    Convert IP to decimal innings.
+    MLB Stats API returns baseball notation (5.1 = 5⅓, 5.2 = 5⅔).
+    If decimal part > 2, treat as regular float (already decimal).
+    """
     try:
-        s = str(ip_val)
+        s = str(ip_val).strip()
         if "." in s:
-            whole, frac = s.split(".")
-            return int(whole) + int(frac) / 3.0
+            whole, frac = s.split(".", 1)
+            frac_int = int(frac[:1])  # only look at first decimal digit
+            if frac_int <= 2:
+                return int(whole) + frac_int / 3.0
+            else:
+                return float(s)  # already a decimal value
         return float(s)
     except Exception:
         return 0.0
