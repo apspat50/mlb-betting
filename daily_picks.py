@@ -248,7 +248,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 mlb_logs = mlb_k_logs.get(pitcher)
                 if mlb_logs is not None and not mlb_logs.empty:
                     past = mlb_logs[mlb_logs["game_date"] < today].copy()
-                    if len(past) >= 3:
+                    if len(past) >= 2:
                         feats["sc_k_L3"]    = float(past["SO"].tail(3).mean())
                         feats["sc_k_L5"]    = float(past["SO"].tail(5).mean())
                         feats["sc_k_season"]= float(past["SO"].mean())
@@ -316,6 +316,12 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     avg_ip = 5.5
                 avg_ip  = round(float(avg_ip), 1)
                 pred_k9 = pred_per_start / avg_ip * 9
+
+                # Sanity cap: no starter realistically averages > 12 K/9
+                # If K/9 is too high, IP estimate is too low — recalculate
+                if pred_k9 > 12.0:
+                    avg_ip = round(pred_per_start / 12.0 * 9, 1)
+                    pred_k9 = 12.0
 
                 form_z   = feats.get("sc_form_z") or feats.get("p_form_z") or 0
                 opp_kpct = feats.get("opp_kpct", 0.22) or 0.22

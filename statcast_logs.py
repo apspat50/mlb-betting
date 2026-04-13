@@ -652,16 +652,34 @@ def _parse_ip(ip_val) -> float:
         return 0.0
 
 
+def _fetch_mlb_game_log_season(pid: int, season: int) -> pd.DataFrame:
+    """Fetch one season of game log splits from MLB Stats API."""
+    import requests
+    try:
+        r = requests.get(
+            "https://statsapi.mlb.com/api/v1/people/{}/stats".format(pid),
+            params={"stats": "gameLog", "group": "pitching", "season": season},
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+        splits = []
+        for sg in data.get("stats", []):
+            splits.extend(sg.get("splits", []))
+        return splits
+    except Exception:
+        return []
+
+
 def fetch_mlb_pitcher_game_logs(pitcher_name: str,
                                  season: int = None) -> pd.DataFrame:
     """
     Fetch accurate per-start stats from MLB Stats API game logs.
-    Returns DataFrame with correct SO and IP — much more reliable
-    than aggregating Statcast pitch-by-pitch data.
+    When the current season has fewer than 5 starts (early season),
+    also pulls the previous season to give the model enough history.
 
     Columns: game_date, name, SO, BB, H, HR, IP, pitches
     """
-    import requests
     from datetime import datetime
 
     if season is None:
@@ -671,52 +689,45 @@ def fetch_mlb_pitcher_game_logs(pitcher_name: str,
     if pid == 0:
         return pd.DataFrame()
 
-    try:
-        r = requests.get(
-            "https://statsapi.mlb.com/api/v1/people/{}/stats".format(pid),
-            params={"stats": "gameLog", "group": "pitching", "season": season},
-            timeout=10,
-        )
-        r.raise_for_status()
-        data = r.json()
-
-        splits = []
-        for stat_group in data.get("stats", []):
-            splits.extend(stat_group.get("splits", []))
-
-        if not splits:
-            return pd.DataFrame()
-
+    def splits_to_rows(splits, name):
         rows = []
         for s in splits:
             stat      = s.get("stat", {})
             ip        = _parse_ip(stat.get("inningsPitched", "0"))
             n_pitches = int(stat.get("numberOfPitches", 0) or 0)
-
-            # Only include starts: IP >= 3 or 70+ pitches thrown
+            # Only starts: IP >= 3 or 70+ pitches
             if ip < 3.0 and n_pitches < 70:
                 continue
-
             rows.append({
                 "game_date": pd.Timestamp(s.get("date", "")),
-                "name":      pitcher_name,
-                "SO":        int(stat.get("strikeOuts",   0) or 0),
-                "BB":        int(stat.get("baseOnBalls",  0) or 0),
-                "H":         int(stat.get("hits",         0) or 0),
-                "HR":        int(stat.get("homeRuns",     0) or 0),
+                "name":      name,
+                "SO":        int(stat.get("strikeOuts",  0) or 0),
+                "BB":        int(stat.get("baseOnBalls", 0) or 0),
+                "H":         int(stat.get("hits",        0) or 0),
+                "HR":        int(stat.get("homeRuns",    0) or 0),
                 "IP":        round(ip, 2),
                 "pitches":   n_pitches,
             })
+        return rows
 
-        if not rows:
-            return pd.DataFrame()
+    # Current season
+    rows = splits_to_rows(_fetch_mlb_game_log_season(pid, season), pitcher_name)
 
-        df = pd.DataFrame(rows)
-        df["game_date"] = pd.to_datetime(df["game_date"])
-        return df.sort_values("game_date").reset_index(drop=True)
+    # If fewer than 5 starts this season (early season), add previous season
+    # so rolling averages have enough data to be meaningful
+    if len(rows) < 5:
+        prev_rows = splits_to_rows(
+            _fetch_mlb_game_log_season(pid, season - 1), pitcher_name
+        )
+        # Append previous season rows before current (chronological order)
+        rows = prev_rows + rows
 
-    except Exception:
+    if not rows:
         return pd.DataFrame()
+
+    df = pd.DataFrame(rows)
+    df["game_date"] = pd.to_datetime(df["game_date"])
+    return df.sort_values("game_date").reset_index(drop=True)
 
 
 def fetch_mlb_k_logs_for_pitchers(pitcher_names: list,
