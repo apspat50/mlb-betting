@@ -246,12 +246,12 @@
       "away_team": "New York Mets",
       "time": "10:10 PM ET",
       "opp_team": "New York Mets",
-      "pred_k9": 12.0,
-      "pred_k_total": 25.1,
-      "avg_ip": 18.8,
+      "pred_k9": 5.6,
+      "pred_k_total": 2.8,
+      "avg_ip": 4.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=28.5 L5=28.5 SwStr=7.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.2 L5=3.2 SwStr=7.5% OppK=22.2%)"
     },
     {
       "pitcher": "David Peterson",
