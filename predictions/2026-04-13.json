@@ -8,12 +8,12 @@
       "away_team": "Houston Astros",
       "time": "4:10 PM ET",
       "opp_team": "Houston Astros",
-      "pred_k9": 6.3,
-      "pred_k_total": 4.7,
+      "pred_k9": 6.9,
+      "pred_k_total": 5.2,
       "avg_ip": 6.7,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=7.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.3 L5=6.6 SwStr=7.0% OppK=22.2%)"
     },
     {
       "pitcher": "Mike Burrows",
@@ -22,12 +22,12 @@
       "away_team": "Houston Astros",
       "time": "4:10 PM ET",
       "opp_team": "Seattle Mariners",
-      "pred_k9": 8.9,
+      "pred_k9": 8.8,
       "pred_k_total": 5.2,
       "avg_ip": 5.3,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.0 L5=5.0 SwStr=11.4% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.0 L5=4.8 SwStr=11.4% OppK=22.2%)"
     },
     {
       "pitcher": "Ryne Nelson",
@@ -36,12 +36,12 @@
       "away_team": "Arizona Diamondbacks",
       "time": "6:35 PM ET",
       "opp_team": "Baltimore Orioles",
-      "pred_k9": 7.3,
-      "pred_k_total": 4.0,
+      "pred_k9": 7.6,
+      "pred_k_total": 4.2,
       "avg_ip": 5.0,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.0 L5=4.0 SwStr=10.8% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.0 L5=4.4 SwStr=10.8% OppK=22.2%)"
     },
     {
       "pitcher": "Cristopher Sanchez",
@@ -64,12 +64,12 @@
       "away_team": "Chicago Cubs",
       "time": "6:40 PM ET",
       "opp_team": "Philadelphia Phillies",
-      "pred_k9": 8.5,
-      "pred_k_total": 5.2,
-      "avg_ip": 5.5,
+      "pred_k9": 6.3,
+      "pred_k_total": 3.5,
+      "avg_ip": 5.0,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "model fallback (no Statcast)"
+      "data_source": "Statcast (L3=3.7 L5=3.2 SwStr=10.5% OppK=22.2%)"
     },
     {
       "pitcher": "Paul Skenes",
@@ -78,12 +78,12 @@
       "away_team": "Washington Nationals",
       "time": "6:40 PM ET",
       "opp_team": "Washington Nationals",
-      "pred_k9": 9.0,
-      "pred_k_total": 5.1,
-      "avg_ip": 5.1,
+      "pred_k9": 9.3,
+      "pred_k_total": 6.0,
+      "avg_ip": 5.8,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.3 L5=5.0 SwStr=10.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.0 L5=6.4 SwStr=10.0% OppK=22.2%)"
     },
     {
       "pitcher": "Cade Cavalli",
@@ -92,12 +92,12 @@
       "away_team": "Washington Nationals",
       "time": "6:40 PM ET",
       "opp_team": "Pittsburgh Pirates",
-      "pred_k9": 6.2,
-      "pred_k_total": 3.3,
+      "pred_k9": 6.4,
+      "pred_k_total": 3.4,
       "avg_ip": 4.8,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.7 L5=3.7 SwStr=8.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.7 L5=4.0 SwStr=8.7% OppK=22.2%)"
     },
     {
       "pitcher": "Will Warren",
@@ -106,12 +106,12 @@
       "away_team": "Los Angeles Angels",
       "time": "7:05 PM ET",
       "opp_team": "Los Angeles Angels",
-      "pred_k9": 7.9,
-      "pred_k_total": 4.3,
+      "pred_k9": 8.1,
+      "pred_k_total": 4.4,
       "avg_ip": 4.9,
       "form_z": 0.7,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=8.6% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.7 L5=5.0 SwStr=8.6% OppK=22.2%)"
     },
     {
       "pitcher": "Yusei Kikuchi",
@@ -120,12 +120,12 @@
       "away_team": "Los Angeles Angels",
       "time": "7:05 PM ET",
       "opp_team": "New York Yankees",
-      "pred_k9": 10.5,
-      "pred_k_total": 5.7,
+      "pred_k9": 10.1,
+      "pred_k_total": 5.5,
       "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=12.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.3 L5=4.8 SwStr=12.0% OppK=22.2%)"
     },
     {
       "pitcher": "Grant Holmes",
@@ -134,12 +134,12 @@
       "away_team": "Miami Marlins",
       "time": "7:15 PM ET",
       "opp_team": "Miami Marlins",
-      "pred_k9": 8.0,
-      "pred_k_total": 5.3,
+      "pred_k9": 7.3,
+      "pred_k_total": 4.8,
       "avg_ip": 5.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=12.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.7 L5=3.6 SwStr=12.7% OppK=22.2%)"
     },
     {
       "pitcher": "Eury Perez",
@@ -162,12 +162,12 @@
       "away_team": "Boston Red Sox",
       "time": "7:40 PM ET",
       "opp_team": "Boston Red Sox",
-      "pred_k9": 4.0,
-      "pred_k_total": 2.0,
+      "pred_k9": 4.2,
+      "pred_k_total": 2.1,
       "avg_ip": 4.6,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=2.3 L5=2.3 SwStr=7.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=2.3 L5=2.6 SwStr=7.7% OppK=22.2%)"
     },
     {
       "pitcher": "Garrett Crochet",
@@ -176,12 +176,12 @@
       "away_team": "Boston Red Sox",
       "time": "7:40 PM ET",
       "opp_team": "Minnesota Twins",
-      "pred_k9": 12.5,
+      "pred_k9": 12.0,
       "pred_k_total": 8.1,
-      "avg_ip": 5.8,
+      "avg_ip": 6.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=7.3 L5=7.3 SwStr=12.2% OppK=22.2%)"
+      "data_source": "Statcast (L3=7.3 L5=7.4 SwStr=12.2% OppK=22.2%)"
     },
     {
       "pitcher": "Matthew Liberatore",
@@ -190,12 +190,12 @@
       "away_team": "Cleveland Guardians",
       "time": "7:45 PM ET",
       "opp_team": "Cleveland Guardians",
-      "pred_k9": 5.0,
-      "pred_k_total": 2.9,
+      "pred_k9": 5.6,
+      "pred_k_total": 3.3,
       "avg_ip": 5.3,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.3 L5=3.3 SwStr=7.4% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.3 L5=4.4 SwStr=7.4% OppK=22.2%)"
     },
     {
       "pitcher": "Gavin Williams",
@@ -204,12 +204,12 @@
       "away_team": "Cleveland Guardians",
       "time": "7:45 PM ET",
       "opp_team": "St. Louis Cardinals",
-      "pred_k9": 14.4,
-      "pred_k_total": 9.4,
-      "avg_ip": 5.9,
+      "pred_k9": 12.0,
+      "pred_k_total": 9.8,
+      "avg_ip": 7.4,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=8.3 L5=8.3 SwStr=13.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=8.3 L5=9.2 SwStr=13.3% OppK=22.2%)"
     },
     {
       "pitcher": "Luis Severino",
@@ -218,12 +218,12 @@
       "away_team": "Texas Rangers",
       "time": "9:40 PM ET",
       "opp_team": "Texas Rangers",
-      "pred_k9": 11.2,
-      "pred_k_total": 5.5,
+      "pred_k9": 10.7,
+      "pred_k_total": 5.2,
       "avg_ip": 4.4,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=9.8% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.7 L5=5.0 SwStr=9.8% OppK=22.2%)"
     },
     {
       "pitcher": "Nathan Eovaldi",
@@ -232,12 +232,12 @@
       "away_team": "Texas Rangers",
       "time": "9:40 PM ET",
       "opp_team": "Athletics",
-      "pred_k9": 13.0,
-      "pred_k_total": 7.1,
-      "avg_ip": 4.9,
+      "pred_k9": 12.0,
+      "pred_k_total": 7.3,
+      "avg_ip": 5.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=16.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.3 L5=6.8 SwStr=16.7% OppK=22.2%)"
     },
     {
       "pitcher": "Justin Wrobleski",
@@ -246,12 +246,12 @@
       "away_team": "New York Mets",
       "time": "10:10 PM ET",
       "opp_team": "New York Mets",
-      "pred_k9": 4.7,
+      "pred_k9": 4.8,
       "pred_k_total": 2.1,
-      "avg_ip": 3.9,
+      "avg_ip": 4.0,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=2.3 L5=2.3 SwStr=7.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=2.0 L5=3.0 SwStr=7.5% OppK=22.2%)"
     },
     {
       "pitcher": "David Peterson",
@@ -265,7 +265,7 @@
       "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=9.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.7 L5=4.6 SwStr=9.5% OppK=22.2%)"
     }
   ]
 }
