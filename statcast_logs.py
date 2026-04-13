@@ -634,6 +634,117 @@ def fetch_todays_pitcher_starts(pitcher_names: list,
     return combined.sort_values(["name", "game_date"]).reset_index(drop=True)
 
 
+# ══════════════════════════════════════════════
+# MLB STATS API — ACCURATE K COUNTS PER START
+# Statcast pitch aggregation is unreliable for K counts.
+# MLB Stats API game logs are the official source.
+# ══════════════════════════════════════════════
+
+def _parse_ip(ip_val) -> float:
+    """Convert baseball IP notation (5.1 = 5⅓) to decimal innings."""
+    try:
+        s = str(ip_val)
+        if "." in s:
+            whole, frac = s.split(".")
+            return int(whole) + int(frac) / 3.0
+        return float(s)
+    except Exception:
+        return 0.0
+
+
+def fetch_mlb_pitcher_game_logs(pitcher_name: str,
+                                 season: int = None) -> pd.DataFrame:
+    """
+    Fetch accurate per-start stats from MLB Stats API game logs.
+    Returns DataFrame with correct SO and IP — much more reliable
+    than aggregating Statcast pitch-by-pitch data.
+
+    Columns: game_date, name, SO, BB, H, HR, IP, pitches
+    """
+    import requests
+    from datetime import datetime
+
+    if season is None:
+        season = datetime.now().year
+
+    pid = get_pitcher_id(pitcher_name)
+    if pid == 0:
+        return pd.DataFrame()
+
+    try:
+        r = requests.get(
+            "https://statsapi.mlb.com/api/v1/people/{}/stats".format(pid),
+            params={"stats": "gameLog", "group": "pitching", "season": season},
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+
+        splits = []
+        for stat_group in data.get("stats", []):
+            splits.extend(stat_group.get("splits", []))
+
+        if not splits:
+            return pd.DataFrame()
+
+        rows = []
+        for s in splits:
+            stat      = s.get("stat", {})
+            ip        = _parse_ip(stat.get("inningsPitched", "0"))
+            n_pitches = int(stat.get("numberOfPitches", 0) or 0)
+
+            # Only include starts: IP >= 3 or 70+ pitches thrown
+            if ip < 3.0 and n_pitches < 70:
+                continue
+
+            rows.append({
+                "game_date": pd.Timestamp(s.get("date", "")),
+                "name":      pitcher_name,
+                "SO":        int(stat.get("strikeOuts",   0) or 0),
+                "BB":        int(stat.get("baseOnBalls",  0) or 0),
+                "H":         int(stat.get("hits",         0) or 0),
+                "HR":        int(stat.get("homeRuns",     0) or 0),
+                "IP":        round(ip, 2),
+                "pitches":   n_pitches,
+            })
+
+        if not rows:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(rows)
+        df["game_date"] = pd.to_datetime(df["game_date"])
+        return df.sort_values("game_date").reset_index(drop=True)
+
+    except Exception:
+        return pd.DataFrame()
+
+
+def fetch_mlb_k_logs_for_pitchers(pitcher_names: list,
+                                   season: int = None) -> dict:
+    """
+    Batch fetch accurate game-log K data for all today's pitchers.
+    Returns dict: pitcher_name -> DataFrame of starts
+    """
+    from datetime import datetime
+    if season is None:
+        season = datetime.now().year
+
+    result = {}
+    n = len(pitcher_names)
+    for i, name in enumerate(pitcher_names):
+        if not name or name == "TBD":
+            continue
+        print(f"  [{i+1}/{n}] MLB logs: {name}...", end=" ")
+        logs = fetch_mlb_pitcher_game_logs(name, season)
+        if not logs.empty:
+            result[name] = logs
+            print(f"{len(logs)} starts")
+        else:
+            print("no data")
+
+    return result
+
+
 def get_pitcher_features_live(pitcher_name: str,
                                game_date=None,
                                days_back: int = 45) -> dict:

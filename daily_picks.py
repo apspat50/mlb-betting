@@ -175,7 +175,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
             load_team_batting_stats,
             predict_stat,
         )
-        from statcast_logs import fetch_todays_pitcher_starts
+        from statcast_logs import fetch_todays_pitcher_starts, fetch_mlb_k_logs_for_pitchers
     except Exception as e:
         print("  Could not import props_model: {}".format(e))
         return []
@@ -221,6 +221,10 @@ def run_k_predictions(games: pd.DataFrame) -> list:
             start_logs["name"].nunique()
         ))
 
+    # Fetch accurate K counts from MLB Stats API (official source)
+    print("  Fetching accurate K counts from MLB Stats API...")
+    mlb_k_logs = fetch_mlb_k_logs_for_pitchers(todays_pitchers)
+
     predictions = []
     today = datetime.now()
 
@@ -237,6 +241,19 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     pitcher, today, pit_logs, opp_team, team_bat, home_team,
                     start_logs=start_logs,
                 )
+
+                # -- PATCH K COUNTS WITH ACCURATE MLB STATS API DATA --
+                # MLB game logs have 100% correct K counts; Statcast aggregation
+                # can miscount due to pitch-by-pitch edge cases.
+                mlb_logs = mlb_k_logs.get(pitcher)
+                if mlb_logs is not None and not mlb_logs.empty:
+                    past = mlb_logs[mlb_logs["game_date"] < today].copy()
+                    if len(past) >= 3:
+                        feats["sc_k_L3"]    = float(past["SO"].tail(3).mean())
+                        feats["sc_k_L5"]    = float(past["SO"].tail(5).mean())
+                        feats["sc_k_season"]= float(past["SO"].mean())
+                        feats["sc_ip_L3"]   = float(past["IP"].tail(3).mean())
+                        feats["sc_k_std"]   = float(past["SO"].tail(10).std())
 
                 # -- STATCAST-FIRST PREDICTION --
                 sc_k_L3     = feats.get("sc_k_L3")
