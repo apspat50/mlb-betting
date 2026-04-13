@@ -175,7 +175,11 @@ def run_k_predictions(games: pd.DataFrame) -> list:
             load_team_batting_stats,
             predict_stat,
         )
-        from statcast_logs import fetch_todays_pitcher_starts, fetch_mlb_k_logs_for_pitchers
+        from statcast_logs import (
+            fetch_todays_pitcher_starts,
+            fetch_mlb_k_logs_for_pitchers,
+            fetch_mlb_season_stats_for_pitchers,
+        )
     except Exception as e:
         print("  Could not import props_model: {}".format(e))
         return []
@@ -222,8 +226,15 @@ def run_k_predictions(games: pd.DataFrame) -> list:
         ))
 
     # Fetch accurate K counts from MLB Stats API (official source)
-    print("  Fetching accurate K counts from MLB Stats API...")
+    print("  Fetching MLB game logs (recent form)...")
     mlb_k_logs = fetch_mlb_k_logs_for_pitchers(todays_pitchers)
+
+    # Fetch season aggregate stats — most reliable K/start baseline
+    cur_year = today.year
+    print("  Fetching MLB season stats ({}/{})...".format(cur_year, cur_year - 1))
+    mlb_season_stats = fetch_mlb_season_stats_for_pitchers(
+        todays_pitchers, seasons=[cur_year, cur_year - 1]
+    )
 
     predictions = []
     today = datetime.now()
@@ -243,17 +254,49 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 )
 
                 # -- PATCH K COUNTS WITH ACCURATE MLB STATS API DATA --
-                # MLB game logs have 100% correct K counts; Statcast aggregation
-                # can miscount due to pitch-by-pitch edge cases.
-                mlb_logs = mlb_k_logs.get(pitcher)
-                if mlb_logs is not None and not mlb_logs.empty:
-                    past = mlb_logs[mlb_logs["game_date"] < today].copy()
-                    if len(past) >= 2:
-                        feats["sc_k_L3"]    = float(past["SO"].tail(3).mean())
-                        feats["sc_k_L5"]    = float(past["SO"].tail(5).mean())
-                        feats["sc_k_season"]= float(past["SO"].mean())
-                        feats["sc_ip_L3"]   = float(past["IP"].tail(3).mean())
-                        feats["sc_k_std"]   = float(past["SO"].tail(10).std())
+                # Priority: season aggregate (most reliable) > game logs (recent trend)
+                p_season  = mlb_season_stats.get(pitcher, {})
+                s_cur     = p_season.get(cur_year, {})
+                s_prev    = p_season.get(cur_year - 1, {})
+                mlb_logs  = mlb_k_logs.get(pitcher)
+
+                gs_cur  = s_cur.get("gs", 0)
+                kps_cur = s_cur.get("k_per_start")
+                ips_cur = s_cur.get("ip_per_start")
+                kps_prv = s_prev.get("k_per_start")
+                ips_prv = s_prev.get("ip_per_start")
+
+                # Build K baseline from season aggregates
+                if gs_cur >= 8 and kps_cur is not None:
+                    # Enough current season data — use it directly
+                    k_base = kps_cur
+                    ip_base = ips_cur or 5.5
+                elif gs_cur >= 2 and kps_cur is not None and kps_prv is not None:
+                    # Early season: blend current (small) with previous season
+                    w = min(gs_cur / 8.0, 0.45)
+                    k_base  = kps_cur * w + kps_prv * (1 - w)
+                    ip_base = (ips_cur or 5.5) * w + (ips_prv or 5.5) * (1 - w)
+                elif kps_prv is not None:
+                    # No current season data — use previous season
+                    k_base  = kps_prv
+                    ip_base = ips_prv or 5.5
+                else:
+                    k_base  = None
+                    ip_base = None
+
+                if k_base is not None:
+                    # Adjust for recent form using game logs
+                    if mlb_logs is not None and not mlb_logs.empty:
+                        past = mlb_logs[mlb_logs["game_date"] < today]
+                        if len(past) >= 3:
+                            recent_avg = float(past["SO"].tail(5).mean())
+                            trend = (recent_avg / k_base - 1.0) if k_base > 0 else 0
+                            k_base = k_base * (1 + np.clip(trend, -0.25, 0.25))
+
+                    feats["sc_k_L3"]     = k_base
+                    feats["sc_k_L5"]     = k_base
+                    feats["sc_k_season"] = k_base
+                    feats["sc_ip_L3"]    = ip_base
 
                 # -- STATCAST-FIRST PREDICTION --
                 sc_k_L3     = feats.get("sc_k_L3")

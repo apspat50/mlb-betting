@@ -730,6 +730,72 @@ def fetch_mlb_pitcher_game_logs(pitcher_name: str,
     return df.sort_values("game_date").reset_index(drop=True)
 
 
+def fetch_mlb_pitcher_season_stats(pid: int, season: int) -> dict:
+    """
+    Fetch season-aggregate pitching stats from MLB Stats API.
+    Returns K/start, IP/start, GS from the full season — more reliable
+    than summing individual game logs.
+    """
+    import requests
+    try:
+        r = requests.get(
+            "https://statsapi.mlb.com/api/v1/people/{}/stats".format(pid),
+            params={"stats": "season", "group": "pitching",
+                    "season": season, "gameType": "R"},
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+        for sg in data.get("stats", []):
+            splits = sg.get("splits", [])
+            if not splits:
+                continue
+            stat = splits[0].get("stat", {})
+            gs   = int(stat.get("gamesStarted", 0) or 0)
+            so   = int(stat.get("strikeOuts",   0) or 0)
+            ip   = _parse_ip(stat.get("inningsPitched", "0"))
+            if gs == 0:
+                return {}
+            return {
+                "gs":           gs,
+                "so":           so,
+                "ip":           ip,
+                "k_per_start":  round(so / gs, 2),
+                "ip_per_start": round(ip / max(gs, 1), 2),
+                "k9":           round(so / max(ip, 0.1) * 9, 2),
+            }
+    except Exception:
+        pass
+    return {}
+
+
+def fetch_mlb_season_stats_for_pitchers(pitcher_names: list,
+                                         seasons: list = None) -> dict:
+    """
+    Batch fetch season stats for all today's pitchers.
+    Returns dict: pitcher_name -> {season -> stats_dict}
+    """
+    from datetime import datetime
+    if seasons is None:
+        cur = datetime.now().year
+        seasons = [cur, cur - 1]
+
+    result = {}
+    n = len(pitcher_names)
+    for i, name in enumerate(pitcher_names):
+        if not name or name == "TBD":
+            continue
+        pid = get_pitcher_id(name)
+        if pid == 0:
+            continue
+        result[name] = {}
+        for s in seasons:
+            stats = fetch_mlb_pitcher_season_stats(pid, s)
+            if stats:
+                result[name][s] = stats
+    return result
+
+
 def fetch_mlb_k_logs_for_pitchers(pitcher_names: list,
                                    season: int = None) -> dict:
     """
