@@ -338,10 +338,13 @@ def build_pitcher_k_features(pitcher: str,
     season = gd.year
 
     # ── Pitcher's own rolling stats ──
-    p = pitching_logs[
-        (pitching_logs["Name"] == pitcher) &
-        (pitching_logs["Date"] < gd)
-    ].sort_values("Date").copy()
+    if pitching_logs.empty or "Name" not in pitching_logs.columns:
+        p = pd.DataFrame()
+    else:
+        p = pitching_logs[
+            (pitching_logs["Name"] == pitcher) &
+            (pitching_logs["Date"] < gd)
+        ].sort_values("Date").copy()
 
     if len(p) >= 3:
         so = _safe(p["SO"])
@@ -379,11 +382,14 @@ def build_pitcher_k_features(pitcher: str,
 
     # ── Opponent team's K vulnerability ──
     opp_last = opp_team_abbrev.split()[-1] if opp_team_abbrev.strip() else ""
-    opp = team_bat_stats[
-        (team_bat_stats["Team"].str.contains(
-            opp_last, na=False, regex=False) if opp_last else pd.Series([False]*len(team_bat_stats)))
-        & (team_bat_stats["season"] == season)
-    ]
+    if team_bat_stats.empty or "Team" not in team_bat_stats.columns:
+        opp = pd.DataFrame()
+    else:
+        opp = team_bat_stats[
+            (team_bat_stats["Team"].str.contains(
+                opp_last, na=False, regex=False) if opp_last else pd.Series([False]*len(team_bat_stats)))
+            & (team_bat_stats["season"] == season)
+        ]
     if not opp.empty:
         row = opp.iloc[0]
         kpct = str(row.get("K%","22%")).replace("%","")
