@@ -211,7 +211,7 @@ def run_k_predictions(games: pd.DataFrame) -> list:
     print("  Fetching recent Statcast starts for {} pitchers...".format(
         len(todays_pitchers)
     ))
-    start_logs = fetch_todays_pitcher_starts(todays_pitchers, days_back=45)
+    start_logs = fetch_todays_pitcher_starts(todays_pitchers, days_back=60)
 
     if start_logs.empty:
         print("  No Statcast data found -- will use model fallback only")

@@ -187,20 +187,34 @@ def aggregate_to_starts(df: pd.DataFrame,
 
     for game_date, game_df in df.groupby("game_date"):
         pitches = len(game_df)
-        if pitches < 10:   # not a real start
+        if pitches < 50:   # filter out relief appearances (starts = 70+ pitches typically)
             continue
 
         # Basic counting stats
-        so  = (game_df["events"] == "strikeout").sum()
-        bb  = (game_df["events"] == "walk").sum()
+        # Include strikeout_double_play as a K
+        so  = game_df["events"].isin(["strikeout", "strikeout_double_play"]).sum()
+        bb  = game_df["events"].isin(["walk", "hit_by_pitch"]).sum()
         hr  = (game_df["events"] == "home_run").sum()
         h   = game_df["events"].isin(
             ["single","double","triple","home_run"]
         ).sum()
 
-        # IP estimate: batters faced / 3 (rough)
-        bf  = game_df["events"].notna().sum()
-        ip  = max(bf / 3.0, 1.0)
+        # IP estimate: count outs recorded (more accurate than bf/3)
+        # Single-out events count 1, double-play events count 2
+        single_out_events = [
+            "field_out", "strikeout", "force_out", "fielders_choice_out",
+            "sac_fly", "sac_bunt", "fielders_choice",
+        ]
+        double_out_events = [
+            "double_play", "grounded_into_double_play", "strikeout_double_play",
+            "sac_fly_double_play", "sac_bunt_double_play",
+        ]
+        outs = (
+            game_df["events"].isin(single_out_events).sum() +
+            game_df["events"].isin(double_out_events).sum() * 2 +
+            (game_df["events"] == "triple_play").sum() * 3
+        )
+        ip  = max(outs / 3.0, 1.0)
 
         # Velocity
         velo = pd.to_numeric(game_df["release_speed"], errors="coerce").dropna()
