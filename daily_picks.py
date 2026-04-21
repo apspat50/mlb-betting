@@ -266,18 +266,17 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 kps_prv = s_prev.get("k_per_start")
                 ips_prv = s_prev.get("ip_per_start")
 
-                # Build K baseline from season aggregates
+                # Build K baseline — previous season is the primary anchor.
+                # Full season average (150+ IP) is far more stable than
+                # a handful of early-season starts. Only switch to current
+                # season once we have 8+ starts of real data.
                 if gs_cur >= 8 and kps_cur is not None:
-                    # Enough current season data — use it directly
-                    k_base = kps_cur
+                    # Enough current data — trust this season
+                    k_base  = kps_cur
                     ip_base = ips_cur or 5.5
-                elif gs_cur >= 2 and kps_cur is not None and kps_prv is not None:
-                    # Early season: blend current (small) with previous season
-                    w = min(gs_cur / 8.0, 0.45)
-                    k_base  = kps_cur * w + kps_prv * (1 - w)
-                    ip_base = (ips_cur or 5.5) * w + (ips_prv or 5.5) * (1 - w)
                 elif kps_prv is not None:
-                    # No current season data — use previous season
+                    # Fewer than 8 starts this year: always prefer last year's
+                    # full-season average over a tiny, noisy current sample
                     k_base  = kps_prv
                     ip_base = ips_prv or 5.5
                 else:
@@ -300,13 +299,14 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                         ip_base = float(past_all["IP"].mean())
 
                 if k_base is not None:
-                    # Adjust for recent form using game logs (±25% max)
+                    # Small recent-form nudge (±15%) using official game logs.
+                    # Intentionally modest — the season baseline is our anchor.
                     if mlb_logs is not None and not mlb_logs.empty:
                         past = mlb_logs[mlb_logs["game_date"] < today]
                         if len(past) >= 3:
                             recent_avg = float(past["SO"].tail(5).mean())
                             trend = (recent_avg / k_base - 1.0) if k_base > 0 else 0
-                            k_base = k_base * (1 + np.clip(trend, -0.25, 0.25))
+                            k_base = k_base * (1 + np.clip(trend, -0.15, 0.15))
 
                     feats["sc_k_L3"]     = k_base
                     feats["sc_k_L5"]     = k_base

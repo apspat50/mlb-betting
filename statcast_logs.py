@@ -45,21 +45,56 @@ MIN_STARTS = 3
 # Cache player ID lookups to avoid repeated API calls
 _player_id_cache = {}
 
+
+def _lookup_via_mlb_api(name: str) -> int:
+    """
+    Primary player ID lookup using MLB Stats API people search.
+    Handles unusual name spellings (e.g. "Cristopher") that pybaseball misses.
+    """
+    import requests
+    try:
+        r = requests.get(
+            "https://statsapi.mlb.com/api/v1/people/search",
+            params={"names": name, "sportId": 1, "active": True},
+            timeout=10,
+        )
+        r.raise_for_status()
+        people = r.json().get("people", [])
+        # Prefer active pitchers (position code "1")
+        for p in people:
+            pos = p.get("primaryPosition", {}).get("code", "")
+            if pos == "1":
+                return int(p["id"])
+        # Fallback: first result regardless of position
+        if people:
+            return int(people[0]["id"])
+    except Exception:
+        pass
+    return 0
+
+
 def get_pitcher_id(name: str) -> int:
     """
     Look up a pitcher's MLBAM player ID by name.
-    Uses pybaseball's playerid_lookup function.
+    Tries MLB Stats API first (handles unusual spellings), then pybaseball.
     Returns 0 if not found.
     """
     if name in _player_id_cache:
         return _player_id_cache[name]
 
+    # Primary: MLB Stats API people search
+    pid = _lookup_via_mlb_api(name)
+    if pid > 0:
+        _player_id_cache[name] = pid
+        return pid
+
+    # Fallback: pybaseball playerid_lookup
     try:
         import pybaseball as pyb
 
-        # Parse name — try "First Last" format
         parts = name.strip().split()
         if len(parts) < 2:
+            _player_id_cache[name] = 0
             return 0
 
         last  = parts[-1]
@@ -67,17 +102,15 @@ def get_pitcher_id(name: str) -> int:
 
         result = pyb.playerid_lookup(last, first)
         if result.empty:
-            # Try fuzzy — just last name
             result = pyb.playerid_lookup(last)
 
         if not result.empty:
-            # Get most recent player (highest key_mlbam)
             pid = int(result.sort_values("mlb_played_last",
                                           ascending=False).iloc[0]["key_mlbam"])
             _player_id_cache[name] = pid
             return pid
 
-    except Exception as e:
+    except Exception:
         pass
 
     _player_id_cache[name] = 0
