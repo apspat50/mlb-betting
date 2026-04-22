@@ -1,0 +1,40 @@
+name: Weekly Summary
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Sunday 11:00 PM EDT (Monday 03:00 UTC) — runs once per week
+  workflow_dispatch:
+
+jobs:
+  weekly-summary:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create config from secrets
+        run: |
+          echo '{"telegram_token":"${{ secrets.TELEGRAM_TOKEN }}","chat_id":"${{ secrets.TELEGRAM_CHAT_ID }}","bankroll":1000,"min_edge":0.06}' > config.json
+
+      - name: Pull latest predictions for the week
+        run: git pull --rebase origin main || true
+
+      - name: Run weekly summary and send to Telegram
+        run: python weekly_summary.py
+        env:
+          PYTHONUNBUFFERED: "1"

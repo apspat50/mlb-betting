@@ -1,15 +1,15 @@
-name: Daily Batter Picks
+name: Daily Results Check
 
 on:
   schedule:
-    - cron: '30 16 * * *'  # 12:30 PM EDT (16:30 UTC) — after lineups post
+    - cron: '30 3 * * *'  # 11:30 PM EDT (03:30 UTC next day)
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  send-batter-picks:
+  check-results:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,39 +34,25 @@ jobs:
 
       - name: Get today's date
         id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      - name: Restore batter Statcast cache
-        uses: actions/cache@v3
-        with:
-          path: cache/statcast_bat/
-          key: ${{ runner.os }}-statcast-bat-${{ steps.date.outputs.date }}
-          restore-keys: |
-            ${{ runner.os }}-statcast-bat-
+        run: echo "date=$(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Create config from secrets
         run: |
           echo '{"telegram_token":"${{ secrets.TELEGRAM_TOKEN }}","chat_id":"${{ secrets.TELEGRAM_CHAT_ID }}","bankroll":1000,"min_edge":0.06}' > config.json
 
-      - name: Pull latest predictions (from pitcher picks run)
+      - name: Pull latest predictions (committed by noon workflows)
         run: git pull --rebase origin main || true
 
-      - name: Run and send batter picks
-        run: python daily_batter_picks.py
+      - name: Run results check and send to Telegram
+        run: python daily_results.py --date ${{ steps.date.outputs.date }}
         env:
           PYTHONUNBUFFERED: "1"
 
-      - name: Save batter Statcast cache
-        uses: actions/cache@v3
-        with:
-          path: cache/statcast_bat/
-          key: ${{ runner.os }}-statcast-bat-${{ steps.date.outputs.date }}
-
-      - name: Commit predictions to repo
+      - name: Commit results back to repo
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin main || true
           git add predictions/
-          git diff --staged --quiet || git commit -m "predictions: ${{ steps.date.outputs.date }} (batters)"
+          git diff --staged --quiet || git commit -m "results: ${{ steps.date.outputs.date }}"
           git push origin HEAD
