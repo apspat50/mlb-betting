@@ -159,6 +159,54 @@ def fetch_all_results(date_str: str) -> dict:
     return all_results
 
 
+def fetch_batter_results(date_str: str) -> dict:
+    """
+    Fetch actual batter stats (H, TB, HR) from boxscores.
+    Returns dict: player_name -> {H, TB, HR}
+    """
+    pks = fetch_game_pks(date_str)
+    if not pks:
+        return {}
+
+    all_batters = {}
+    for pk in pks:
+        try:
+            r = requests.get(
+                "https://statsapi.mlb.com/api/v1/game/{}/boxscore".format(pk),
+                timeout=10,
+            )
+            r.raise_for_status()
+            box = r.json()
+        except Exception:
+            continue
+
+        for side in ["home", "away"]:
+            team_data = box.get("teams", {}).get(side, {})
+            batters   = team_data.get("batters", [])
+            players   = team_data.get("players", {})
+
+            for batter_id in batters:
+                player = players.get("ID{}".format(batter_id), {})
+                name   = player.get("person", {}).get("fullName", "")
+                stats  = player.get("stats", {}).get("batting", {})
+                if not name or not stats:
+                    continue
+
+                ab = int(stats.get("atBats",   0) or 0)
+                if ab == 0:
+                    continue  # pinch runner, etc.
+
+                h  = int(stats.get("hits",     0) or 0)
+                d  = int(stats.get("doubles",  0) or 0)
+                t  = int(stats.get("triples",  0) or 0)
+                hr = int(stats.get("homeRuns", 0) or 0)
+                tb = h + d + 2 * t + 3 * hr  # singles=1, doubles=2, triples=3, hr=4
+
+                all_batters[name] = {"H": h, "TB": tb, "HR": hr}
+
+    return all_batters
+
+
 # ======================================================
 # COMPARE + SCORE
 # ======================================================
@@ -206,6 +254,95 @@ def compare_predictions(predictions: list, actuals: dict) -> list:
         })
 
     return compared
+
+
+# ======================================================
+# BATTER COMPARE + MESSAGE
+# ======================================================
+
+def compare_batter_predictions(batter_preds: list, actuals: dict) -> list:
+    compared = []
+    for pred in batter_preds:
+        name   = pred.get("batter", "")
+        actual = actuals.get(name)
+
+        if actual is None:
+            for aname, ares in actuals.items():
+                if name.split()[-1].lower() == aname.split()[-1].lower():
+                    actual = ares
+                    break
+
+        pred_h  = pred.get("pred_h")
+        pred_tb = pred.get("pred_tb")
+        pred_hr = pred.get("pred_hr")
+
+        actual_h  = actual["H"]  if actual else None
+        actual_tb = actual["TB"] if actual else None
+        actual_hr = actual["HR"] if actual else None
+
+        def _diff(p, a): return round(a - p, 2) if p is not None and a is not None else None
+        def _hit_h(d):  return abs(d) <= 0.5 if d is not None else None
+        def _hit_tb(d): return abs(d) <= 1.0 if d is not None else None
+        def _hit_hr(d): return abs(d) <= 0.3 if d is not None else None
+
+        dh  = _diff(pred_h,  actual_h)
+        dtb = _diff(pred_tb, actual_tb)
+        dhr = _diff(pred_hr, actual_hr)
+
+        compared.append({
+            "batter":    name,
+            "home_team": pred.get("home_team", ""),
+            "away_team": pred.get("away_team", ""),
+            "pred_h":    pred_h,   "actual_h":  actual_h,  "diff_h":  dh,  "hit_h":  _hit_h(dh),
+            "pred_tb":   pred_tb,  "actual_tb": actual_tb, "diff_tb": dtb, "hit_tb": _hit_tb(dtb),
+            "pred_hr":   pred_hr,  "actual_hr": actual_hr, "diff_hr": dhr, "hit_hr": _hit_hr(dhr),
+        })
+    return compared
+
+
+def build_batter_results_message(compared: list, date_str: str) -> str:
+    date_fmt = datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
+    lines = ["\n<b>Results: MLB Batter Props — {}</b>".format(date_fmt)]
+
+    has  = [c for c in compared if c["actual_h"] is not None]
+    if not has:
+        lines.append("No batter results found yet.")
+        return "\n".join(lines)
+
+    h_hits  = sum(1 for c in has if c["hit_h"])
+    tb_hits = sum(1 for c in has if c["hit_tb"])
+    hr_hits = sum(1 for c in has if c["hit_hr"])
+    n       = len(has)
+
+    lines.append(
+        "H: <b>{}/{}</b> ({:.0f}%)  TB: <b>{}/{}</b> ({:.0f}%)  HR: <b>{}/{}</b> ({:.0f}%)\n".format(
+            h_hits, n, h_hits/n*100,
+            tb_hits, n, tb_hits/n*100,
+            hr_hits, n, hr_hits/n*100,
+        )
+    )
+
+    has.sort(key=lambda x: x.get("pred_tb") or 0, reverse=True)
+    for c in has[:15]:
+        def _fmt(pred, actual, hit):
+            if pred is None or actual is None:
+                return "n/a"
+            diff = actual - pred
+            mark = "✅" if hit else "❌"
+            return "{} (pred {:.1f}) {}".format(actual, pred, mark)
+
+        lines.append(
+            "<b>{}</b>\n"
+            "   {} @ {}\n"
+            "   H: {}  TB: {}  HR: {}\n".format(
+                c["batter"],
+                c["away_team"], c["home_team"],
+                _fmt(c["pred_h"],  c["actual_h"],  c["hit_h"]),
+                _fmt(c["pred_tb"], c["actual_tb"], c["hit_tb"]),
+                _fmt(c["pred_hr"], c["actual_hr"], c["hit_hr"]),
+            )
+        )
+    return "\n".join(lines)
 
 
 # ======================================================
@@ -277,7 +414,8 @@ def build_results_message(compared: list, date_str: str) -> str:
 # SAVE RESULTS BACK TO FILE
 # ======================================================
 
-def save_results(compared: list, date_str: str):
+def save_results(compared_pitchers: list, date_str: str,
+                 compared_batters: list = None):
     filepath = PREDICTIONS_DIR / f"{date_str}.json"
     existing = {}
     if filepath.exists():
@@ -286,7 +424,9 @@ def save_results(compared: list, date_str: str):
         except Exception:
             existing = {}
 
-    existing["pitcher_results"] = compared
+    existing["pitcher_results"]    = compared_pitchers
+    if compared_batters is not None:
+        existing["batter_results"] = compared_batters
     existing["results_fetched_at"] = datetime.now().isoformat()
 
     json.dump(existing, open(filepath, "w"), indent=2, default=str)
@@ -324,11 +464,23 @@ def main():
         return
     print("  {} starters with results found".format(len(actuals)))
 
-    # Compare
+    # Compare pitchers
     compared = compare_predictions(pitcher_preds, actuals)
-    save_results(compared, date_str)
 
-    # Print table
+    # Batter results
+    batter_preds    = preds_data.get("batters", [])
+    compared_batters = []
+    if batter_preds:
+        print("\n  Fetching batter results from boxscores...")
+        batter_actuals  = fetch_batter_results(date_str)
+        compared_batters = compare_batter_predictions(batter_preds, batter_actuals)
+        print("  {} batter results found".format(
+            sum(1 for c in compared_batters if c["actual_h"] is not None)
+        ))
+
+    save_results(compared, date_str, compared_batters if batter_preds else None)
+
+    # Print pitcher table
     has_results = [c for c in compared if c["actual_k"] is not None]
     print("\n" + "=" * 60)
     if has_results:
@@ -348,16 +500,42 @@ def main():
             hits, total, hits / total * 100 if total else 0,
             np.mean(diffs) if diffs else 0
         ))
-    print("=" * 60 + "\n")
+    print("=" * 60)
 
-    message = build_results_message(compared, date_str)
+    # Print batter table
+    has_batters = [c for c in compared_batters if c["actual_h"] is not None]
+    if has_batters:
+        print("\n  {:<25} {:>6} {:>6} {:>6} {:>6} {:>6} {:>6}".format(
+            "BATTER", "pH", "aH", "pTB", "aTB", "pHR", "aHR"
+        ))
+        print("  " + "-" * 58)
+        for c in has_batters[:15]:
+            print("  {:<25} {:>6.1f} {:>6} {:>6.1f} {:>6} {:>6.2f} {:>6}  {}{}{}".format(
+                c["batter"],
+                c["pred_h"]  or 0, c["actual_h"]  or 0,
+                c["pred_tb"] or 0, c["actual_tb"] or 0,
+                c["pred_hr"] or 0, c["actual_hr"] or 0,
+                "H✓" if c["hit_h"]  else "H✗",
+                " TB✓" if c["hit_tb"] else " TB✗",
+                " HR✓" if c["hit_hr"] else " HR✗",
+            ))
+    print()
+
+    pitcher_msg = build_results_message(compared, date_str)
+    batter_msg  = build_batter_results_message(compared_batters, date_str) if compared_batters else ""
 
     if not args.no_send:
-        send_telegram(message, config["telegram_token"], config["chat_id"])
+        send_telegram(pitcher_msg, config["telegram_token"], config["chat_id"])
+        if batter_msg:
+            send_telegram(batter_msg, config["telegram_token"], config["chat_id"])
     else:
         import re
-        print("--- MESSAGE PREVIEW ---")
-        print(re.sub(r"<[^>]+>", "", message))
+        clean = lambda m: re.sub(r"<[^>]+>", "", m)
+        print("--- PITCHER MESSAGE ---")
+        print(clean(pitcher_msg))
+        if batter_msg:
+            print("--- BATTER MESSAGE ---")
+            print(clean(batter_msg))
 
 
 if __name__ == "__main__":

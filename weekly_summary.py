@@ -315,6 +315,123 @@ def build_weekly_message(rows: list, stats: dict, days: int) -> str:
 
 
 # ──────────────────────────────────────────────
+# BATTER WEEKLY SUPPORT
+# ──────────────────────────────────────────────
+
+def load_week_batter_predictions(days: int = 7) -> list:
+    today    = datetime.now().date()
+    all_rows = []
+
+    for i in range(days):
+        date     = today - timedelta(days=i + 1)
+        date_str = date.strftime("%Y-%m-%d")
+        filepath = PREDICTIONS_DIR / "{}.json".format(date_str)
+
+        if not filepath.exists():
+            continue
+        try:
+            data = json.load(open(filepath))
+        except Exception:
+            continue
+
+        batters = data.get("batters", [])
+        results = {r["batter"]: r for r in data.get("batter_results", [])}
+
+        for b in batters:
+            name   = b.get("batter", "")
+            result = results.get(name)
+            if result is None:
+                for rname, rval in results.items():
+                    if name.split()[-1].lower() == rname.split()[-1].lower():
+                        result = rval
+                        break
+
+            all_rows.append({
+                "date":      date_str,
+                "batter":    name,
+                "home_team": b.get("home_team", ""),
+                "away_team": b.get("away_team", ""),
+                "pred_h":    b.get("pred_h"),
+                "pred_tb":   b.get("pred_tb"),
+                "pred_hr":   b.get("pred_hr"),
+                "actual_h":  result["actual_h"]  if result else None,
+                "actual_tb": result["actual_tb"] if result else None,
+                "actual_hr": result["actual_hr"] if result else None,
+            })
+
+    return all_rows
+
+
+def score_batter_rows(rows: list) -> dict:
+    with_h  = [r for r in rows if r["actual_h"]  is not None and r["pred_h"]  is not None]
+    with_tb = [r for r in rows if r["actual_tb"] is not None and r["pred_tb"] is not None]
+    with_hr = [r for r in rows if r["actual_hr"] is not None and r["pred_hr"] is not None]
+
+    def _score(pairs, threshold):
+        diffs = [abs(a - p) for p, a in pairs]
+        hits  = [d <= threshold for d in diffs]
+        mae   = round(float(np.mean(diffs)), 2) if diffs else None
+        rate  = round(sum(hits) / len(hits) * 100, 1) if hits else None
+        return {"n": len(pairs), "hits": sum(hits), "hit_rate": rate, "mae": mae}
+
+    return {
+        "h":  _score([(r["pred_h"],  r["actual_h"])  for r in with_h],  0.5),
+        "tb": _score([(r["pred_tb"], r["actual_tb"]) for r in with_tb], 1.0),
+        "hr": _score([(r["pred_hr"], r["actual_hr"]) for r in with_hr], 0.3),
+    }
+
+
+def build_batter_weekly_message(rows: list, stats: dict, days: int) -> str:
+    today      = datetime.now()
+    end_date   = (today - timedelta(days=1)).strftime("%b %d")
+    start_date = (today - timedelta(days=days)).strftime("%b %d")
+
+    lines = [
+        "<b>Weekly Batter Props Report</b>",
+        "<i>{} – {}</i>\n".format(start_date, end_date),
+    ]
+
+    if not stats:
+        lines.append("No batter results found for this period.")
+        return "\n".join(lines)
+
+    h  = stats.get("h",  {})
+    tb = stats.get("tb", {})
+    hr = stats.get("hr", {})
+
+    lines.append(
+        "H:  <b>{}/{}</b> ({:.0f}%)  MAE: {}".format(
+            h.get("hits",0), h.get("n",0), h.get("hit_rate",0) or 0, h.get("mae","n/a"))
+    )
+    lines.append(
+        "TB: <b>{}/{}</b> ({:.0f}%)  MAE: {}".format(
+            tb.get("hits",0), tb.get("n",0), tb.get("hit_rate",0) or 0, tb.get("mae","n/a"))
+    )
+    lines.append(
+        "HR: <b>{}/{}</b> ({:.0f}%)  MAE: {}\n".format(
+            hr.get("hits",0), hr.get("n",0), hr.get("hit_rate",0) or 0, hr.get("mae","n/a"))
+    )
+
+    # Best and worst H predictions
+    with_h = [r for r in rows if r["actual_h"] is not None and r["pred_h"] is not None]
+    if with_h:
+        sorted_h = sorted(with_h, key=lambda x: abs(x["actual_h"] - x["pred_h"]))
+        lines.append("<b>Best H Calls</b>")
+        for r in sorted_h[:3]:
+            diff = r["actual_h"] - r["pred_h"]
+            lines.append("  ✅ {} ({}) — Pred: {:.1f}  Actual: {} ({:+.1f})".format(
+                r["batter"], r["date"], r["pred_h"], r["actual_h"], diff))
+        lines.append("\n<b>Biggest H Misses</b>")
+        for r in sorted_h[-3:][::-1]:
+            diff = r["actual_h"] - r["pred_h"]
+            lines.append("  ❌ {} ({}) — Pred: {:.1f}  Actual: {} ({:+.1f})".format(
+                r["batter"], r["date"], r["pred_h"], r["actual_h"], diff))
+
+    lines.append("\n{}".format(today.strftime("%I:%M %p ET")))
+    return "\n".join(lines)
+
+
+# ──────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────
 
@@ -369,14 +486,29 @@ def main():
         print("  No completed results found for this period.")
     print("=" * 65 + "\n")
 
-    message = build_weekly_message(rows, stats, args.days)
+    pitcher_msg = build_weekly_message(rows, stats, args.days)
+
+    # Batter weekly summary
+    print("\n  Loading batter predictions...")
+    batter_rows = load_week_batter_predictions(args.days)
+    batter_msg  = ""
+    if batter_rows:
+        print("  {} batter entries loaded".format(len(batter_rows)))
+        batter_stats = score_batter_rows(batter_rows)
+        batter_msg   = build_batter_weekly_message(batter_rows, batter_stats, args.days)
 
     if not args.no_send:
-        send_telegram(message, config["telegram_token"], config["chat_id"])
+        send_telegram(pitcher_msg, config["telegram_token"], config["chat_id"])
+        if batter_msg:
+            send_telegram(batter_msg, config["telegram_token"], config["chat_id"])
     else:
         import re
-        print("--- MESSAGE PREVIEW ---")
-        print(re.sub(r"<[^>]+>", "", message))
+        clean = lambda m: re.sub(r"<[^>]+>", "", m)
+        print("--- PITCHER MESSAGE PREVIEW ---")
+        print(clean(pitcher_msg))
+        if batter_msg:
+            print("\n--- BATTER MESSAGE PREVIEW ---")
+            print(clean(batter_msg))
 
 
 if __name__ == "__main__":
