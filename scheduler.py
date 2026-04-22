@@ -109,6 +109,40 @@ def run_daily_picks():
             pass
 
 
+def run_batter_picks():
+    """Run batter props (H, TB, HR) at noon when lineups are posted."""
+    log.info("Running batter picks...")
+    config = load_config_from_env()
+    try:
+        from daily_batter_picks import (
+            fetch_todays_games,
+            run_batter_predictions,
+            build_message,
+            save_batter_predictions,
+            send_telegram,
+        )
+
+        games = fetch_todays_games()
+        if games.empty:
+            log.info("No games today — skipping batter picks")
+            return
+
+        predictions = run_batter_predictions(games)
+        if not predictions:
+            log.info("No batter predictions generated")
+            return
+
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        save_batter_predictions(predictions, date_str)
+
+        message = build_message(predictions, games)
+        send_telegram(message, config["telegram_token"], config["chat_id"])
+        log.info("Batter picks sent successfully ✅")
+
+    except Exception as e:
+        log.error(f"Batter picks failed: {e}")
+
+
 def run_daily_results():
     """Fetch actual K results and compare to today's predictions."""
     log.info("Running daily results check...")
@@ -200,6 +234,9 @@ def main():
 
     # Schedule daily picks
     schedule.every().day.at(send_time).do(run_daily_picks)
+
+    # Batter props at noon ET (lineups posted by then)
+    schedule.every().day.at("12:00").do(run_batter_picks)
 
     # Daily results check at 11:30 PM ET (most games finished by then)
     schedule.every().day.at("23:30").do(run_daily_results)
