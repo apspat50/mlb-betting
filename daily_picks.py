@@ -266,52 +266,77 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 kps_prv = s_prev.get("k_per_start")
                 ips_prv = s_prev.get("ip_per_start")
 
-                # Build K baseline — previous season is the primary anchor.
-                # Full season average (150+ IP) is far more stable than
-                # a handful of early-season starts. Only switch to current
-                # season once we have 8+ starts of real data.
-                if gs_cur >= 8 and kps_cur is not None:
-                    # Enough current data — trust this season
-                    k_base  = kps_cur
+                # -- IP-BASED K PREDICTION --
+                # Separate K rate (K/9) from workload (innings pitched).
+                # K/9 from a full season is stable; recent avg IP captures
+                # whether a pitcher is being pulled early or on a pitch count.
+                # Prediction = K/9_rate × expected_IP_tonight / 9
+
+                k9_cur  = s_cur.get("k9")
+                k9_prv  = s_prev.get("k9")
+                ips_cur = s_cur.get("ip_per_start")
+                ips_prv = s_prev.get("ip_per_start")
+
+                # Stable K/9 rate — previous season anchor, switch to current at 8+ GS
+                if gs_cur >= 8 and k9_cur is not None:
+                    k9_base = k9_cur
                     ip_base = ips_cur or 5.5
-                elif kps_prv is not None:
-                    # Fewer than 8 starts this year: always prefer last year's
-                    # full-season average over a tiny, noisy current sample
-                    k_base  = kps_prv
+                elif k9_prv is not None:
+                    k9_base = k9_prv
                     ip_base = ips_prv or 5.5
                 else:
-                    k_base  = None
+                    k9_base = None
                     ip_base = None
 
-                # Sanity check season stats — reject anything outside plausible range
-                # (real starters: 2.5–11 K/start; 3–8 IP/start)
-                if k_base is not None and not (2.0 <= k_base <= 11.0):
+                # Sanity check K/9 rate (real starters: 4–13 K/9)
+                if k9_base is not None and not (4.0 <= k9_base <= 13.0):
+                    k9_base = None
+
+                # Recent avg IP from last 5 game logs — captures early hooks,
+                # pitch count limits, and workload trends
+                recent_ip = None
+                if mlb_logs is not None and not mlb_logs.empty:
+                    past = mlb_logs[mlb_logs["game_date"] < today]
+                    if len(past) >= 3:
+                        recent_ip = float(past["IP"].tail(5).mean())
+
+                # Expected IP: prefer recent avg (last 5 starts) over season avg
+                if recent_ip is not None and 2.0 <= recent_ip <= 9.0:
+                    ip_expected = recent_ip
+                elif ip_base is not None and 3.0 <= ip_base <= 9.0:
+                    ip_expected = ip_base
+                else:
+                    ip_expected = 5.5
+
+                # Core prediction: K/9 rate × expected innings
+                if k9_base is not None:
+                    k_base = (k9_base / 9.0) * ip_expected
+                else:
                     k_base = None
-                if ip_base is not None and not (3.0 <= ip_base <= 9.0):
-                    ip_base = None
 
-                # Fallback: compute K baseline from game log data
-                # Used when season stats are unavailable or rejected
+                # Fallback: use raw K/start average from game logs
                 if k_base is None and mlb_logs is not None and not mlb_logs.empty:
                     past_all = mlb_logs[mlb_logs["game_date"] < today]
                     if len(past_all) >= 5:
-                        k_base  = float(past_all["SO"].mean())
-                        ip_base = float(past_all["IP"].mean())
+                        k_base = float(past_all["SO"].mean())
+
+                # Small K/9 trend nudge (±10%) — adjusts rate, not IP
+                # Catches a pitcher who's suddenly missing more or fewer bats
+                if k_base is not None and k9_base is not None and mlb_logs is not None \
+                        and not mlb_logs.empty:
+                    past = mlb_logs[mlb_logs["game_date"] < today]
+                    if len(past) >= 3:
+                        recent_k9 = float(
+                            (past["SO"] / past["IP"].clip(lower=0.1) * 9).tail(5).mean()
+                        )
+                        k9_trend = (recent_k9 / k9_base - 1.0) if k9_base > 0 else 0
+                        k_base = k_base * (1 + np.clip(k9_trend, -0.10, 0.10))
 
                 if k_base is not None:
-                    # Small recent-form nudge (±15%) using official game logs.
-                    # Intentionally modest — the season baseline is our anchor.
-                    if mlb_logs is not None and not mlb_logs.empty:
-                        past = mlb_logs[mlb_logs["game_date"] < today]
-                        if len(past) >= 3:
-                            recent_avg = float(past["SO"].tail(5).mean())
-                            trend = (recent_avg / k_base - 1.0) if k_base > 0 else 0
-                            k_base = k_base * (1 + np.clip(trend, -0.15, 0.15))
-
                     feats["sc_k_L3"]     = k_base
                     feats["sc_k_L5"]     = k_base
                     feats["sc_k_season"] = k_base
-                    feats["sc_ip_L3"]    = ip_base or 5.5
+                    feats["sc_ip_L3"]    = ip_expected
 
                 # -- STATCAST-FIRST PREDICTION --
                 sc_k_L3     = feats.get("sc_k_L3")
