@@ -109,6 +109,71 @@ def run_daily_picks():
             pass
 
 
+def run_daily_results():
+    """Fetch actual K results and compare to today's predictions."""
+    log.info("Running daily results check...")
+    config = load_config_from_env()
+    try:
+        from daily_results import (
+            load_predictions,
+            fetch_all_results,
+            compare_predictions,
+            build_results_message,
+            save_results,
+        )
+        from daily_picks import send_telegram
+
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        preds_data    = load_predictions(date_str)
+        pitcher_preds = preds_data.get("pitchers", [])
+
+        if not pitcher_preds:
+            log.info("No predictions found for today — skipping results")
+            return
+
+        actuals = fetch_all_results(date_str)
+        if not actuals:
+            log.info("No completed games yet — skipping results")
+            return
+
+        compared = compare_predictions(pitcher_preds, actuals)
+        save_results(compared, date_str)
+        message = build_results_message(compared, date_str)
+        send_telegram(message, config["telegram_token"], config["chat_id"])
+        log.info("Daily results sent successfully ✅")
+
+    except Exception as e:
+        log.error(f"Daily results failed: {e}")
+
+
+def run_weekly_summary():
+    """Send weekly K prediction recap every Sunday night."""
+    log.info("Running weekly summary...")
+    config = load_config_from_env()
+    try:
+        from weekly_summary import (
+            load_week_predictions,
+            fill_missing_actuals,
+            score_rows,
+            build_weekly_message,
+        )
+        from daily_picks import send_telegram
+
+        rows = load_week_predictions(days=7)
+        if not rows:
+            log.info("No prediction files found for the week")
+            return
+
+        rows  = fill_missing_actuals(rows)
+        stats = score_rows(rows)
+        message = build_weekly_message(rows, stats, days=7)
+        send_telegram(message, config["telegram_token"], config["chat_id"])
+        log.info("Weekly summary sent successfully ✅")
+
+    except Exception as e:
+        log.error(f"Weekly summary failed: {e}")
+
+
 def run_heartbeat():
     """Send a weekly status check so you know the server is alive."""
     config = load_config_from_env()
@@ -135,6 +200,12 @@ def main():
 
     # Schedule daily picks
     schedule.every().day.at(send_time).do(run_daily_picks)
+
+    # Daily results check at 11:30 PM ET (most games finished by then)
+    schedule.every().day.at("23:30").do(run_daily_results)
+
+    # Weekly summary every Sunday at 11:00 PM ET
+    schedule.every().sunday.at("23:00").do(run_weekly_summary)
 
     # Weekly heartbeat every Monday at 9am
     schedule.every().monday.at("09:00").do(run_heartbeat)
