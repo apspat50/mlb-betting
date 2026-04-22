@@ -326,17 +326,18 @@ def build_batter_results_message(compared: list, date_str: str) -> str:
         )
     )
 
-    # ── HR outcomes ──
-    hr_preds = [c for c in has if (c.get("pred_hr") or 0) >= 0.20]
+    # ── HR outcomes — only top picks by HR% ──
+    hr_preds = sorted(
+        [c for c in has if (c.get("pred_hr") or 0) >= 0.20],
+        key=lambda x: x.get("pred_hr") or 0, reverse=True
+    )[:6]  # top 6 HR picks only
     if hr_preds:
-        lines.append("🏠 <b>HR Bet Results</b>")
-        for c in sorted(hr_preds, key=lambda x: x.get("pred_hr") or 0, reverse=True):
+        hr_hit  = sum(1 for c in hr_preds if (c["actual_hr"] or 0) >= 1)
+        lines.append("🏠 <b>HR Bet Results</b> (top picks) — {}/{} hit".format(hr_hit, len(hr_preds)))
+        for c in hr_preds:
             pred_pct = int(round((c["pred_hr"] or 0) * 100))
             actual   = c["actual_hr"] or 0
-            if actual >= 1:
-                mark = "✅ HIT"
-            else:
-                mark = "❌ MISS"
+            mark     = "✅ HIT" if actual >= 1 else "❌ MISS"
             lines.append("   {} <b>{}</b> — {} HR (pred {}%)".format(
                 mark, c["batter"], actual, pred_pct
             ))
@@ -436,11 +437,15 @@ def build_results_message(compared: list, date_str: str) -> str:
     if worst and abs(worst[0]["diff"] or 0) > 1.5:
         lines.append("❌ <b>Biggest Misses</b>")
         for c in worst:
-            if abs(c["diff"] or 0) <= 1.5:
+            d = c["diff"] or 0
+            if abs(d) <= 1.5:
                 break
-            direction = "under" if (c["diff"] or 0) > 0 else "over"
-            lines.append("   <b>{}</b> — pred {} K · actual <b>{} K</b> ({:+.1f}, bet {} panned out)".format(
-                c["pitcher"], c["pred_k"], c["actual_k"], c["diff"] or 0, direction
+            if d < 0:
+                note = "actual went UNDER — over bets lost"
+            else:
+                note = "actual went OVER — under bets lost"
+            lines.append("   <b>{}</b> — pred {} K · actual <b>{} K</b> ({:+.1f}) <i>{}</i>".format(
+                c["pitcher"], c["pred_k"], c["actual_k"], d, note
             ))
         lines.append("")
 
