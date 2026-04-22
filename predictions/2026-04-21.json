@@ -8,9 +8,9 @@
       "away_team": "Houston Astros",
       "time": "6:10 PM ET",
       "opp_team": "Houston Astros",
-      "pred_k9": 9.1,
-      "pred_k_total": 5.8,
-      "avg_ip": 5.7,
+      "pred_k9": 8.5,
+      "pred_k_total": 5.7,
+      "avg_ip": 6.1,
       "form_z": 0,
       "opp_kpct": 0.22,
       "data_source": "Statcast (L3=5.8 L5=5.8 SwStr=10.1% OppK=22.2%)"
@@ -36,12 +36,12 @@
       "away_team": "Cincinnati Reds",
       "time": "6:40 PM ET",
       "opp_team": "Cincinnati Reds",
-      "pred_k9": 9.6,
-      "pred_k_total": 5.3,
+      "pred_k9": 7.9,
+      "pred_k_total": 4.3,
       "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.0 L5=5.0 SwStr=12.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.1 L5=4.1 SwStr=12.0% OppK=22.2%)"
     },
     {
       "pitcher": "Chase Burns",
@@ -50,12 +50,12 @@
       "away_team": "Cincinnati Reds",
       "time": "6:40 PM ET",
       "opp_team": "Tampa Bay Rays",
-      "pred_k9": 12.0,
-      "pred_k_total": 8.1,
-      "avg_ip": 6.0,
+      "pred_k9": 10.9,
+      "pred_k_total": 6.8,
+      "avg_ip": 5.6,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=7.1 L5=7.1 SwStr=13.2% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.0 L5=6.0 SwStr=13.2% OppK=22.2%)"
     },
     {
       "pitcher": "Keider Montero",
@@ -64,12 +64,12 @@
       "away_team": "Milwaukee Brewers",
       "time": "6:40 PM ET",
       "opp_team": "Milwaukee Brewers",
-      "pred_k9": 5.3,
-      "pred_k_total": 4.5,
-      "avg_ip": 7.6,
+      "pred_k9": 6.9,
+      "pred_k_total": 4.0,
+      "avg_ip": 5.3,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.1 L5=5.1 SwStr=7.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.6 L5=4.6 SwStr=7.7% OppK=22.2%)"
     },
     {
       "pitcher": "Kyle Harrison",
@@ -78,12 +78,12 @@
       "away_team": "Milwaukee Brewers",
       "time": "6:40 PM ET",
       "opp_team": "Detroit Tigers",
-      "pred_k9": 8.5,
-      "pred_k_total": 5.6,
-      "avg_ip": 5.9,
+      "pred_k9": 11.0,
+      "pred_k_total": 5.0,
+      "avg_ip": 4.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=11.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=11.3% OppK=22.2%)"
     },
     {
       "pitcher": "Chris Paddack",
@@ -92,12 +92,12 @@
       "away_team": "St. Louis Cardinals",
       "time": "6:40 PM ET",
       "opp_team": "St. Louis Cardinals",
-      "pred_k9": 7.1,
-      "pred_k_total": 4.4,
-      "avg_ip": 5.6,
+      "pred_k9": 6.8,
+      "pred_k_total": 3.6,
+      "avg_ip": 4.8,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.6 L5=4.6 SwStr=9.8% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.7 L5=3.7 SwStr=9.8% OppK=22.2%)"
     },
     {
       "pitcher": "Dustin May",
@@ -106,12 +106,12 @@
       "away_team": "St. Louis Cardinals",
       "time": "6:40 PM ET",
       "opp_team": "Miami Marlins",
-      "pred_k9": 6.3,
-      "pred_k_total": 4.1,
-      "avg_ip": 5.8,
+      "pred_k9": 6.9,
+      "pred_k_total": 3.7,
+      "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.5 L5=4.5 SwStr=5.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=5.5% OppK=22.2%)"
     },
     {
       "pitcher": "Foster Griffin",
@@ -120,9 +120,9 @@
       "away_team": "Atlanta Braves",
       "time": "6:45 PM ET",
       "opp_team": "Atlanta Braves",
-      "pred_k9": 7.7,
+      "pred_k9": 7.4,
       "pred_k_total": 4.4,
-      "avg_ip": 5.1,
+      "avg_ip": 5.3,
       "form_z": 0,
       "opp_kpct": 0.22,
       "data_source": "Statcast (L3=4.4 L5=4.4 SwStr=10.4% OppK=22.2%)"
@@ -148,12 +148,12 @@
       "away_team": "New York Yankees",
       "time": "6:45 PM ET",
       "opp_team": "New York Yankees",
-      "pred_k9": 10.7,
-      "pred_k_total": 5.7,
-      "avg_ip": 4.8,
+      "pred_k9": 8.0,
+      "pred_k_total": 4.4,
+      "avg_ip": 5.0,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.2 L5=6.2 SwStr=9.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=9.3% OppK=22.2%)"
     },
     {
       "pitcher": "Luis Gil",
@@ -162,12 +162,12 @@
       "away_team": "New York Yankees",
       "time": "6:45 PM ET",
       "opp_team": "Boston Red Sox",
-      "pred_k9": 5.2,
-      "pred_k_total": 3.0,
-      "avg_ip": 5.2,
+      "pred_k9": 5.4,
+      "pred_k_total": 3.2,
+      "avg_ip": 5.3,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.2 L5=3.2 SwStr=8.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.4 L5=3.4 SwStr=8.7% OppK=22.2%)"
     },
     {
       "pitcher": "Nolan McLean",
@@ -176,12 +176,12 @@
       "away_team": "Minnesota Twins",
       "time": "7:10 PM ET",
       "opp_team": "Minnesota Twins",
-      "pred_k9": 9.9,
-      "pred_k_total": 6.6,
-      "avg_ip": 6.0,
+      "pred_k9": 10.3,
+      "pred_k_total": 7.0,
+      "avg_ip": 6.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=7.2 L5=7.2 SwStr=8.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=7.6 L5=7.6 SwStr=8.7% OppK=22.2%)"
     },
     {
       "pitcher": "Simeon Woods Richardson",
@@ -190,12 +190,12 @@
       "away_team": "Minnesota Twins",
       "time": "7:10 PM ET",
       "opp_team": "New York Mets",
-      "pred_k9": 6.4,
-      "pred_k_total": 3.6,
+      "pred_k9": 6.9,
+      "pred_k_total": 3.9,
       "avg_ip": 5.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.1 L5=4.1 SwStr=5.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.4 L5=4.4 SwStr=5.0% OppK=22.2%)"
     },
     {
       "pitcher": "Kris Bubic",
@@ -204,12 +204,12 @@
       "away_team": "Baltimore Orioles",
       "time": "7:40 PM ET",
       "opp_team": "Baltimore Orioles",
-      "pred_k9": 9.7,
-      "pred_k_total": 6.2,
-      "avg_ip": 5.8,
+      "pred_k9": 10.1,
+      "pred_k_total": 6.4,
+      "avg_ip": 5.7,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.6 L5=5.6 SwStr=13.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=13.3% OppK=22.2%)"
     },
     {
       "pitcher": "Shane Baz",
@@ -218,12 +218,12 @@
       "away_team": "Baltimore Orioles",
       "time": "7:40 PM ET",
       "opp_team": "Kansas City Royals",
-      "pred_k9": 7.4,
-      "pred_k_total": 4.4,
-      "avg_ip": 5.4,
+      "pred_k9": 7.8,
+      "pred_k_total": 4.9,
+      "avg_ip": 5.7,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=8.8% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=8.8% OppK=22.2%)"
     },
     {
       "pitcher": "Shota Imanaga",
@@ -232,12 +232,12 @@
       "away_team": "Philadelphia Phillies",
       "time": "7:40 PM ET",
       "opp_team": "Philadelphia Phillies",
-      "pred_k9": 9.4,
-      "pred_k_total": 6.0,
+      "pred_k9": 9.0,
+      "pred_k_total": 5.8,
       "avg_ip": 5.8,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=15.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.2 L5=5.2 SwStr=15.3% OppK=22.2%)"
     },
     {
       "pitcher": "Jesus Luzardo",
@@ -247,11 +247,11 @@
       "time": "7:40 PM ET",
       "opp_team": "Chicago Cubs",
       "pred_k9": 12.0,
-      "pred_k_total": 8.9,
-      "avg_ip": 6.7,
+      "pred_k_total": 7.4,
+      "avg_ip": 5.6,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=7.8 L5=7.8 SwStr=15.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.5 L5=6.5 SwStr=15.5% OppK=22.2%)"
     },
     {
       "pitcher": "Kumar Rocker",
@@ -260,9 +260,9 @@
       "away_team": "Pittsburgh Pirates",
       "time": "8:05 PM ET",
       "opp_team": "Pittsburgh Pirates",
-      "pred_k9": 9.2,
+      "pred_k9": 8.3,
       "pred_k_total": 4.7,
-      "avg_ip": 4.6,
+      "avg_ip": 5.1,
       "form_z": 0,
       "opp_kpct": 0.22,
       "data_source": "Statcast (L3=4.4 L5=4.4 SwStr=11.9% OppK=22.2%)"
@@ -274,12 +274,12 @@
       "away_team": "Pittsburgh Pirates",
       "time": "8:05 PM ET",
       "opp_team": "Texas Rangers",
-      "pred_k9": 6.0,
-      "pred_k_total": 5.5,
-      "avg_ip": 8.2,
+      "pred_k9": 7.8,
+      "pred_k_total": 4.2,
+      "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=7.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.9 L5=4.9 SwStr=7.3% OppK=22.2%)"
     },
     {
       "pitcher": "Jimmy Herget",
@@ -302,12 +302,12 @@
       "away_team": "San Diego Padres",
       "time": "8:40 PM ET",
       "opp_team": "Colorado Rockies",
-      "pred_k9": 6.7,
-      "pred_k_total": 3.8,
-      "avg_ip": 5.1,
+      "pred_k9": 6.4,
+      "pred_k_total": 4.1,
+      "avg_ip": 5.7,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.4 L5=3.4 SwStr=12.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.7 L5=3.7 SwStr=12.7% OppK=22.2%)"
     },
     {
       "pitcher": "Jack Kochanowicz",
@@ -316,12 +316,12 @@
       "away_team": "Toronto Blue Jays",
       "time": "9:38 PM ET",
       "opp_team": "Toronto Blue Jays",
-      "pred_k9": 6.8,
-      "pred_k_total": 3.6,
-      "avg_ip": 4.8,
+      "pred_k9": 6.1,
+      "pred_k_total": 3.9,
+      "avg_ip": 5.8,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.6 L5=3.6 SwStr=10.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.9 L5=3.9 SwStr=10.5% OppK=22.2%)"
     },
     {
       "pitcher": "Patrick Corbin",
@@ -330,12 +330,12 @@
       "away_team": "Toronto Blue Jays",
       "time": "9:38 PM ET",
       "opp_team": "Los Angeles Angels",
-      "pred_k9": 7.3,
-      "pred_k_total": 4.2,
-      "avg_ip": 5.2,
+      "pred_k9": 7.5,
+      "pred_k_total": 3.8,
+      "avg_ip": 4.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=10.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.8 L5=3.8 SwStr=10.5% OppK=22.2%)"
     },
     {
       "pitcher": "Luis Castillo",
@@ -344,12 +344,12 @@
       "away_team": "Athletics",
       "time": "9:40 PM ET",
       "opp_team": "Athletics",
-      "pred_k9": 7.7,
-      "pred_k_total": 4.9,
-      "avg_ip": 5.7,
+      "pred_k9": 8.0,
+      "pred_k_total": 4.2,
+      "avg_ip": 4.7,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=8.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.6 L5=4.6 SwStr=8.5% OppK=22.2%)"
     },
     {
       "pitcher": "Jacob Lopez",
@@ -358,12 +358,12 @@
       "away_team": "Athletics",
       "time": "9:40 PM ET",
       "opp_team": "Seattle Mariners",
-      "pred_k9": 9.5,
-      "pred_k_total": 5.8,
-      "avg_ip": 5.5,
+      "pred_k9": 10.2,
+      "pred_k_total": 5.1,
+      "avg_ip": 4.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=11.1% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.0 L5=5.0 SwStr=11.1% OppK=22.2%)"
     },
     {
       "pitcher": "Merrill Kelly",
@@ -372,12 +372,12 @@
       "away_team": "Chicago White Sox",
       "time": "9:40 PM ET",
       "opp_team": "Chicago White Sox",
-      "pred_k9": 6.9,
-      "pred_k_total": 4.4,
-      "avg_ip": 5.8,
+      "pred_k9": 7.4,
+      "pred_k_total": 3.7,
+      "avg_ip": 4.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.4 L5=4.4 SwStr=10.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.7 L5=3.7 SwStr=10.5% OppK=22.2%)"
     },
     {
       "pitcher": "Sean Burke",
@@ -387,11 +387,11 @@
       "time": "9:40 PM ET",
       "opp_team": "Arizona Diamondbacks",
       "pred_k9": 7.0,
-      "pred_k_total": 4.8,
-      "avg_ip": 6.1,
+      "pred_k_total": 3.8,
+      "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=8.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.3 L5=4.3 SwStr=8.0% OppK=22.2%)"
     },
     {
       "pitcher": "Landen Roupp",
@@ -400,12 +400,12 @@
       "away_team": "Los Angeles Dodgers",
       "time": "9:45 PM ET",
       "opp_team": "Los Angeles Dodgers",
-      "pred_k9": 8.9,
-      "pred_k_total": 4.8,
-      "avg_ip": 4.8,
+      "pred_k9": 8.5,
+      "pred_k_total": 5.2,
+      "avg_ip": 5.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=8.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.8 L5=5.8 SwStr=8.7% OppK=22.2%)"
     },
     {
       "pitcher": "Yoshinobu Yamamoto",
@@ -414,12 +414,375 @@
       "away_team": "Los Angeles Dodgers",
       "time": "9:45 PM ET",
       "opp_team": "San Francisco Giants",
-      "pred_k9": 10.1,
-      "pred_k_total": 6.5,
-      "avg_ip": 5.8,
+      "pred_k9": 10.7,
+      "pred_k_total": 7.3,
+      "avg_ip": 6.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=13.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.4 L5=6.4 SwStr=13.7% OppK=22.2%)"
     }
-  ]
+  ],
+  "pitcher_results": [
+    {
+      "pitcher": "Parker Messick",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Houston Astros",
+      "pred_k": 5.8,
+      "actual_k": 4,
+      "diff": -1.8,
+      "pct_err": 31.0,
+      "hit": false,
+      "ip": "5.0",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Ryan Weiss",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Houston Astros",
+      "pred_k": 3.2,
+      "actual_k": 4,
+      "diff": 0.8,
+      "pct_err": 25.0,
+      "hit": true,
+      "ip": "3.1",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Steven Matz",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cincinnati Reds",
+      "pred_k": 5.3,
+      "actual_k": 4,
+      "diff": -1.3,
+      "pct_err": 24.5,
+      "hit": true,
+      "ip": "3.0",
+      "game_note": "(L, 3-1)"
+    },
+    {
+      "pitcher": "Chase Burns",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cincinnati Reds",
+      "pred_k": 8.1,
+      "actual_k": 8,
+      "diff": -0.1,
+      "pct_err": 1.2,
+      "hit": true,
+      "ip": "5.2",
+      "game_note": "(W, 2-1)"
+    },
+    {
+      "pitcher": "Keider Montero",
+      "home_team": "Detroit Tigers",
+      "away_team": "Milwaukee Brewers",
+      "pred_k": 4.5,
+      "actual_k": 3,
+      "diff": -1.5,
+      "pct_err": 33.3,
+      "hit": true,
+      "ip": "5.2",
+      "game_note": "(L, 1-2)"
+    },
+    {
+      "pitcher": "Kyle Harrison",
+      "home_team": "Detroit Tigers",
+      "away_team": "Milwaukee Brewers",
+      "pred_k": 5.6,
+      "actual_k": 3,
+      "diff": -2.6,
+      "pct_err": 46.4,
+      "hit": false,
+      "ip": "3.0",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Chris Paddack",
+      "home_team": "Miami Marlins",
+      "away_team": "St. Louis Cardinals",
+      "pred_k": 4.4,
+      "actual_k": 7,
+      "diff": 2.6,
+      "pct_err": 59.1,
+      "hit": false,
+      "ip": "4.2",
+      "game_note": "(L, 0-4)"
+    },
+    {
+      "pitcher": "Dustin May",
+      "home_team": "Miami Marlins",
+      "away_team": "St. Louis Cardinals",
+      "pred_k": 4.1,
+      "actual_k": 5,
+      "diff": 0.9,
+      "pct_err": 22.0,
+      "hit": true,
+      "ip": "5.1",
+      "game_note": "(W, 3-2)"
+    },
+    {
+      "pitcher": "Foster Griffin",
+      "home_team": "Washington Nationals",
+      "away_team": "Atlanta Braves",
+      "pred_k": 4.4,
+      "actual_k": 3,
+      "diff": -1.4,
+      "pct_err": 31.8,
+      "hit": true,
+      "ip": "6.0",
+      "game_note": "(W, 3-0)"
+    },
+    {
+      "pitcher": "Reynaldo Lopez",
+      "home_team": "Washington Nationals",
+      "away_team": "Atlanta Braves",
+      "pred_k": 3.7,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Connelly Early",
+      "home_team": "Boston Red Sox",
+      "away_team": "New York Yankees",
+      "pred_k": 5.7,
+      "actual_k": 4,
+      "diff": -1.7,
+      "pct_err": 29.8,
+      "hit": false,
+      "ip": "5.1",
+      "game_note": "(L, 1-1)"
+    },
+    {
+      "pitcher": "Luis Gil",
+      "home_team": "Boston Red Sox",
+      "away_team": "New York Yankees",
+      "pred_k": 3.0,
+      "actual_k": 2,
+      "diff": -1.0,
+      "pct_err": 33.3,
+      "hit": true,
+      "ip": "6.1",
+      "game_note": "(W, 1-1)"
+    },
+    {
+      "pitcher": "Nolan McLean",
+      "home_team": "New York Mets",
+      "away_team": "Minnesota Twins",
+      "pred_k": 6.6,
+      "actual_k": 10,
+      "diff": 3.4,
+      "pct_err": 51.5,
+      "hit": false,
+      "ip": "6.2",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Simeon Woods Richardson",
+      "home_team": "New York Mets",
+      "away_team": "Minnesota Twins",
+      "pred_k": 3.6,
+      "actual_k": 2,
+      "diff": -1.6,
+      "pct_err": 44.4,
+      "hit": false,
+      "ip": "5.0",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Kris Bubic",
+      "home_team": "Kansas City Royals",
+      "away_team": "Baltimore Orioles",
+      "pred_k": 6.2,
+      "actual_k": 3,
+      "diff": -3.2,
+      "pct_err": 51.6,
+      "hit": false,
+      "ip": "6.0",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Shane Baz",
+      "home_team": "Kansas City Royals",
+      "away_team": "Baltimore Orioles",
+      "pred_k": 4.4,
+      "actual_k": 4,
+      "diff": -0.4,
+      "pct_err": 9.1,
+      "hit": true,
+      "ip": "6.1",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Shota Imanaga",
+      "home_team": "Chicago Cubs",
+      "away_team": "Philadelphia Phillies",
+      "pred_k": 6.0,
+      "actual_k": 1,
+      "diff": -5.0,
+      "pct_err": 83.3,
+      "hit": false,
+      "ip": "7.0",
+      "game_note": "(W, 2-1)"
+    },
+    {
+      "pitcher": "Jesus Luzardo",
+      "home_team": "Chicago Cubs",
+      "away_team": "Philadelphia Phillies",
+      "pred_k": 8.9,
+      "actual_k": 3,
+      "diff": -5.9,
+      "pct_err": 66.3,
+      "hit": false,
+      "ip": "4.2",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Kumar Rocker",
+      "home_team": "Texas Rangers",
+      "away_team": "Pittsburgh Pirates",
+      "pred_k": 4.7,
+      "actual_k": 5,
+      "diff": 0.3,
+      "pct_err": 6.4,
+      "hit": true,
+      "ip": "6.0",
+      "game_note": "(W, 1-1)"
+    },
+    {
+      "pitcher": "Carmen Mlodzinski",
+      "home_team": "Texas Rangers",
+      "away_team": "Pittsburgh Pirates",
+      "pred_k": 5.5,
+      "actual_k": 6,
+      "diff": 0.5,
+      "pct_err": 9.1,
+      "hit": true,
+      "ip": "4.1",
+      "game_note": "(L, 1-1)"
+    },
+    {
+      "pitcher": "Jimmy Herget",
+      "home_team": "Colorado Rockies",
+      "away_team": "San Diego Padres",
+      "pred_k": 5.2,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Randy Vasquez",
+      "home_team": "Colorado Rockies",
+      "away_team": "San Diego Padres",
+      "pred_k": 3.8,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Jack Kochanowicz",
+      "home_team": "Los Angeles Angels",
+      "away_team": "Toronto Blue Jays",
+      "pred_k": 3.6,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Patrick Corbin",
+      "home_team": "Los Angeles Angels",
+      "away_team": "Toronto Blue Jays",
+      "pred_k": 4.2,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Luis Castillo",
+      "home_team": "Seattle Mariners",
+      "away_team": "Athletics",
+      "pred_k": 4.9,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Jacob Lopez",
+      "home_team": "Seattle Mariners",
+      "away_team": "Athletics",
+      "pred_k": 5.8,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Merrill Kelly",
+      "home_team": "Arizona Diamondbacks",
+      "away_team": "Chicago White Sox",
+      "pred_k": 4.4,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Sean Burke",
+      "home_team": "Arizona Diamondbacks",
+      "away_team": "Chicago White Sox",
+      "pred_k": 4.8,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Landen Roupp",
+      "home_team": "San Francisco Giants",
+      "away_team": "Los Angeles Dodgers",
+      "pred_k": 4.8,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    },
+    {
+      "pitcher": "Yoshinobu Yamamoto",
+      "home_team": "San Francisco Giants",
+      "away_team": "Los Angeles Dodgers",
+      "pred_k": 6.5,
+      "actual_k": null,
+      "diff": null,
+      "pct_err": null,
+      "hit": null,
+      "ip": null,
+      "game_note": null
+    }
+  ],
+  "results_fetched_at": "2026-04-21T23:07:04.542136"
 }
