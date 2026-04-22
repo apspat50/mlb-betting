@@ -439,51 +439,58 @@ def run_k_predictions(games: pd.DataFrame) -> list:
 
 def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
     today = datetime.now().strftime("%B %d, %Y")
+    lines = ["<b>⚾ MLB Pitcher K Props — {}</b>".format(today)]
 
-    lines = ["<b>MLB Pitcher K Props -- {}</b>".format(today)]
-    lines.append("<i>Statcast rolling averages -- compare to FanDuel manually</i>\n")
+    if not predictions:
+        lines.append("No predictions available. Statcast data may not be ready yet.")
+        lines.append(datetime.now().strftime("%I:%M %p ET"))
+        return "\n".join(lines)
 
-    if predictions:
-        predictions.sort(key=lambda x: x["pred_k_total"], reverse=True)
+    preds = sorted(predictions, key=lambda x: x["pred_k_total"], reverse=True)
 
-        for p in predictions:
-            form = p.get("form_z", 0)
-            if form > 1.5:
-                form_str = " HOT"
-            elif form < -1.5:
-                form_str = " COLD"
-            else:
-                form_str = ""
+    # ── BET OVER: pred well above typical 4.5-5.5 FanDuel line ──
+    over_bets = [p for p in preds if p["pred_k_total"] >= 6.5]
+    # ── BET UNDER: pred well below typical line ──
+    under_bets = [p for p in preds if p["pred_k_total"] <= 3.5]
+    # ── COINFLIP: compare to your specific FanDuel line ──
+    middle = [p for p in preds if 3.5 < p["pred_k_total"] < 6.5]
 
-            opp_k = p.get("opp_kpct", 0.22)
-            if opp_k > 0.26:
-                opp_str = " (opp Ks a lot)"
-            elif opp_k < 0.18:
-                opp_str = " (opp patient)"
-            else:
-                opp_str = ""
-
+    if over_bets:
+        lines.append("🎯 <b>BET OVER on Ks</b>")
+        lines.append("<i>If FanDuel line is below these projections, bet over</i>")
+        for p in over_bets:
+            hot = " 🔥" if p.get("form_z", 0) > 1.5 else ""
+            opp = " (opp K-happy)" if p.get("opp_kpct", 0.22) > 0.26 else ""
             lines.append(
-                "<b>{}</b> ({}){}\n"
-                "   {} @ {} | {}\n"
-                "   Predicted: <b>{} Ks</b> ({} K/9 x {} IP){}\n".format(
-                    p["pitcher"], p["role"], form_str,
-                    p["away_team"], p["home_team"], p["time"],
-                    p["pred_k_total"], p["pred_k9"], p["avg_ip"], opp_str,
+                "🔥 <b>{}</b>{} — <b>{} K</b> ({} K/9 × {}ip){}"
+                "\n   {} @ {} | {}\n".format(
+                    p["pitcher"], hot, p["pred_k_total"], p["pred_k9"], p["avg_ip"], opp,
+                    p["away_team"], p["home_team"], p["time"]
                 )
             )
-    else:
-        lines.append("No predictions available.")
-        lines.append("Statcast data may not be ready yet for today's starters.")
 
-    if not games.empty:
-        lines.append("<b>{} Games Today</b>".format(len(games)))
-        for _, g in games.iterrows():
-            lines.append("  {:>9} {} @ {}".format(
-                g["time"], g["away_team"][:14], g["home_team"][:14]
+    if under_bets:
+        lines.append("📉 <b>BET UNDER on Ks</b>")
+        lines.append("<i>If FanDuel line is above 4.5, lean under</i>")
+        for p in under_bets:
+            lines.append(
+                "📉 <b>{}</b> — <b>{} K</b> ({} K/9 × {}ip)"
+                "\n   {} @ {} | {}\n".format(
+                    p["pitcher"], p["pred_k_total"], p["pred_k9"], p["avg_ip"],
+                    p["away_team"], p["home_team"], p["time"]
+                )
+            )
+
+    if middle:
+        lines.append("⚖️ <b>Compare to Your FanDuel Line</b>")
+        lines.append("<i>Bet over if pred &gt; line by 1+, under if pred &lt; line by 1+</i>")
+        for p in middle:
+            form = " 🔥" if p.get("form_z", 0) > 1.5 else (" 🥶" if p.get("form_z", 0) < -1.5 else "")
+            lines.append("   <b>{}</b>{} — {} K · {} @ {}".format(
+                p["pitcher"], form, p["pred_k_total"], p["away_team"], p["home_team"]
             ))
 
-    lines.append("\n{}".format(datetime.now().strftime("%I:%M %p ET")))
+    lines.append("\n⏰ {}".format(datetime.now().strftime("%I:%M %p ET")))
     return "\n".join(lines)
 
 

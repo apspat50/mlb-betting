@@ -227,63 +227,61 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
     """Build Telegram message for batter props."""
     today = datetime.now().strftime("%B %d, %Y")
     lines = [f"<b>🏏 MLB Batter Props — {today}</b>"]
-    lines.append("<i>Compare predictions to your FanDuel lines</i>\n")
 
     if not predictions:
-        lines.append("❌ No predictions available\n(Lineups may not be posted yet)")
-        lines.append(f"\n⏰ {datetime.now().strftime('%I:%M %p ET')}")
+        lines.append("❌ No predictions available (lineups may not be posted yet)")
+        lines.append(f"⏰ {datetime.now().strftime('%I:%M %p ET')}")
         return "\n".join(lines)
 
-    # ── Top H/TB picks (sorted by TB) ──
-    preds_sorted = sorted(
-        predictions,
-        key=lambda x: x.get("pred_tb") or 0,
+    # ── HIT BETS: H >= 1.2 (bet over 0.5 hits line) ──
+    hit_bets = sorted(
+        [p for p in predictions if (p.get("pred_h") or 0) >= 1.2],
+        key=lambda x: x.get("pred_h") or 0,
         reverse=True
     )
+    if hit_bets:
+        lines.append("🎯 <b>HIT BETS</b> — pred ≥1.2 H <i>(bet over 0.5 hits line)</i>")
+        for p in hit_bets[:8]:
+            hot = " 🔥" if p.get("hot") else ""
+            lines.append(
+                f"✅ <b>{p['batter']}</b>{hot} — <b>{p['pred_h']} H</b> · TB {p['pred_tb']}"
+                f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}\n"
+            )
 
-    for p in preds_sorted[:12]:
-        form_str = " 🔥" if p.get("hot") else (" 🥶" if p.get("slump") else "")
-        hr_pct   = p.get("hr_pct")
-        hr_str   = f"{hr_pct}%" if hr_pct is not None else "?"
-
-        lines.append(
-            f"🏏 <b>{p['batter']}</b>{form_str}"
-            f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}"
-            f"\n   H: <b>{p['pred_h']}</b>  "
-            f"TB: <b>{p['pred_tb']}</b>  "
-            f"HR: <b>{hr_str}</b>\n"
-        )
-
-    # ── HR Picks section ──
+    # ── HR PICKS: sorted by HR%, show barrel% as quality filter ──
     hr_picks = sorted(
         [p for p in predictions if (p.get("hr_pct") or 0) >= 20],
         key=lambda x: x.get("hr_pct") or 0,
         reverse=True
     )
-
     if hr_picks:
-        lines.append("─" * 30)
-        lines.append("<b>🏠 HR Picks — Tonight's Best Bets</b>")
-        lines.append("<i>% = model's estimated HR probability</i>\n")
-
+        lines.append("🏠 <b>HR PICKS</b> — compare % to FanDuel implied odds")
+        lines.append("<i>High barrel% = trust. Low barrel% = risky/lucky HRs</i>\n")
         for p in hr_picks[:8]:
-            pct = p.get("hr_pct", 0)
+            pct    = p.get("hr_pct", 0)
             barrel = p.get("barrel")
             barrel_str = f" · barrel {barrel*100:.0f}%" if barrel else ""
-
-            if pct >= 35:
-                icon = "🔥"
-            elif pct >= 25:
-                icon = "⚡"
+            if pct >= 35 and (barrel or 0) >= 0.08:
+                icon, label = "🔥", "STRONG BET"
+            elif pct >= 25 and (barrel or 0) >= 0.05:
+                icon, label = "⚡", "GOOD BET"
+            elif (barrel or 0) < 0.03:
+                icon, label = "⚠️", "RISKY (lucky HRs)"
             else:
-                icon = "📊"
-
+                icon, label = "📊", "MODERATE"
             lines.append(
-                f"{icon} <b>{p['batter']}</b> — <b>{pct}%</b>{barrel_str}"
+                f"{icon} <b>{p['batter']}</b> — <b>{pct}%</b>{barrel_str} · {label}"
                 f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}\n"
             )
 
-    lines.append(f"⏰ {datetime.now().strftime('%I:%M %p ET')}")
+    # ── SKIP / COLD: slumping batters to avoid ──
+    cold = [p for p in predictions if p.get("slump") and (p.get("pred_h") or 0) < 0.8]
+    if cold:
+        lines.append("🥶 <b>AVOID / COLD STREAKS</b>")
+        for p in cold[:4]:
+            lines.append(f"   ❌ {p['batter']} — pred {p['pred_h']} H (slumping)")
+
+    lines.append(f"\n⏰ {datetime.now().strftime('%I:%M %p ET')}")
     return "\n".join(lines)
 
 

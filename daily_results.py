@@ -302,46 +302,86 @@ def compare_batter_predictions(batter_preds: list, actuals: dict) -> list:
 
 def build_batter_results_message(compared: list, date_str: str) -> str:
     date_fmt = datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
-    lines = ["\n<b>Results: MLB Batter Props — {}</b>".format(date_fmt)]
+    lines    = ["<b>🏏 Batter Results — {}</b>".format(date_fmt)]
 
-    has  = [c for c in compared if c["actual_h"] is not None]
+    has = [c for c in compared if c["actual_h"] is not None]
     if not has:
         lines.append("No batter results found yet.")
         return "\n".join(lines)
 
+    n       = len(has)
     h_hits  = sum(1 for c in has if c["hit_h"])
     tb_hits = sum(1 for c in has if c["hit_tb"])
     hr_hits = sum(1 for c in has if c["hit_hr"])
-    n       = len(has)
+
+    h_grade  = "✅" if h_hits / n >= 0.50 else "⚠️"
+    tb_grade = "✅" if tb_hits / n >= 0.45 else "⚠️"
+    hr_grade = "✅" if hr_hits / n >= 0.65 else "⚠️"
 
     lines.append(
-        "H: <b>{}/{}</b> ({:.0f}%)  TB: <b>{}/{}</b> ({:.0f}%)  HR: <b>{}/{}</b> ({:.0f}%)\n".format(
-            h_hits, n, h_hits/n*100,
-            tb_hits, n, tb_hits/n*100,
-            hr_hits, n, hr_hits/n*100,
+        "{} H: <b>{}/{}</b> ({:.0f}%)  {} TB: <b>{}/{}</b> ({:.0f}%)  {} HR: <b>{}/{}</b> ({:.0f}%)\n".format(
+            h_grade,  h_hits,  n, h_hits/n*100,
+            tb_grade, tb_hits, n, tb_hits/n*100,
+            hr_grade, hr_hits, n, hr_hits/n*100,
         )
     )
 
-    has.sort(key=lambda x: x.get("pred_tb") or 0, reverse=True)
-    for c in has[:15]:
-        def _fmt(pred, actual, hit):
-            if pred is None or actual is None:
-                return "n/a"
-            diff = actual - pred
-            mark = "✅" if hit else "❌"
-            return "{} (pred {:.1f}) {}".format(actual, pred, mark)
+    # ── HR outcomes ──
+    hr_preds = [c for c in has if (c.get("pred_hr") or 0) >= 0.20]
+    if hr_preds:
+        lines.append("🏠 <b>HR Bet Results</b>")
+        for c in sorted(hr_preds, key=lambda x: x.get("pred_hr") or 0, reverse=True):
+            pred_pct = int(round((c["pred_hr"] or 0) * 100))
+            actual   = c["actual_hr"] or 0
+            if actual >= 1:
+                mark = "✅ HIT"
+            else:
+                mark = "❌ MISS"
+            lines.append("   {} <b>{}</b> — {} HR (pred {}%)".format(
+                mark, c["batter"], actual, pred_pct
+            ))
+        lines.append("")
 
-        lines.append(
-            "<b>{}</b>\n"
-            "   {} @ {}\n"
-            "   H: {}  TB: {}  HR: {}\n".format(
-                c["batter"],
-                c["away_team"], c["home_team"],
-                _fmt(c["pred_h"],  c["actual_h"],  c["hit_h"]),
-                _fmt(c["pred_tb"], c["actual_tb"], c["hit_tb"]),
-                _fmt(c["pred_hr"], c["actual_hr"], c["hit_hr"]),
-            )
-        )
+    # ── H bright spots (went over prediction significantly) ──
+    h_over = sorted(
+        [c for c in has if (c["diff_h"] or 0) >= 1.0],
+        key=lambda x: x["diff_h"] or 0, reverse=True
+    )
+    if h_over:
+        lines.append("📈 <b>H Went Over (better than predicted)</b>")
+        for c in h_over[:4]:
+            lines.append("   <b>{}</b> — {} H (pred {:.1f}) +{:.1f}".format(
+                c["batter"], c["actual_h"], c["pred_h"] or 0, c["diff_h"] or 0
+            ))
+        lines.append("")
+
+    # ── TB surprise blowups ──
+    tb_blowup = sorted(
+        [c for c in has if abs(c["diff_tb"] or 0) >= 2.0],
+        key=lambda x: abs(x["diff_tb"] or 0), reverse=True
+    )
+    if tb_blowup:
+        lines.append("💥 <b>TB Surprises</b> (±2+ off prediction)")
+        for c in tb_blowup[:4]:
+            d = c["diff_tb"] or 0
+            lines.append("   <b>{}</b> — {} TB actual, pred {:.1f} ({:+.1f})".format(
+                c["batter"], c["actual_tb"], c["pred_tb"] or 0, d
+            ))
+        lines.append("")
+
+    # ── Compact hit accuracy list ──
+    lines.append("<b>All H Results (pred → actual)</b>")
+    for c in sorted(has, key=lambda x: x.get("pred_h") or 0, reverse=True)[:20]:
+        h_mark  = "✅" if c["hit_h"]  else "❌"
+        tb_mark = "✅" if c["hit_tb"] else "❌"
+        lines.append("   {} <b>{}</b> — H {:.1f}→{} {} · TB {:.1f}→{} {}".format(
+            "🔥" if (c["actual_h"] or 0) >= 3 else " ",
+            c["batter"],
+            c["pred_h"] or 0, c["actual_h"] or 0, h_mark,
+            c["pred_tb"] or 0, c["actual_tb"] or 0, tb_mark,
+        ))
+
+    lines.append("\n⏰ {}".format(datetime.now().strftime("%I:%M %p ET")))
     return "\n".join(lines)
 
 
@@ -350,64 +390,80 @@ def build_batter_results_message(compared: list, date_str: str) -> str:
 # ======================================================
 
 def build_results_message(compared: list, date_str: str) -> str:
-    date_fmt = datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
-    lines = ["<b>Results: MLB Pitcher K Props — {}</b>".format(date_fmt)]
+    date_fmt  = datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
+    lines     = ["<b>⚾ Pitcher K Results — {}</b>".format(date_fmt)]
 
-    has_results = [c for c in compared if c["actual_k"] is not None]
-    no_results  = [c for c in compared if c["actual_k"] is None]
-
-    if not has_results:
+    has = [c for c in compared if c["actual_k"] is not None]
+    if not has:
         lines.append("No completed game results found yet.")
         return "\n".join(lines)
 
-    # Sort by predicted Ks descending
-    has_results.sort(key=lambda x: x["pred_k"] or 0, reverse=True)
+    hits    = sum(1 for c in has if c["hit"])
+    total   = len(has)
+    diffs   = [abs(c["diff"]) for c in has if c["diff"] is not None]
+    mae     = round(np.mean(diffs), 2) if diffs else 0
+    hit_pct = hits / total * 100 if total else 0
 
-    hits   = sum(1 for c in has_results if c["hit"])
-    total  = len(has_results)
-    hit_pct = hits / total * 100 if total > 0 else 0
+    # Score header
+    grade = "🔥" if hit_pct >= 65 else ("✅" if hit_pct >= 50 else "⚠️")
+    lines.append("{} <b>{}/{}</b> within 1.5 Ks ({:.0f}%) | Avg error: {} Ks\n".format(
+        grade, hits, total, hit_pct, mae
+    ))
 
-    diffs  = [abs(c["diff"]) for c in has_results if c["diff"] is not None]
-    mae    = round(np.mean(diffs), 2) if diffs else None
+    # Short starts (excluded or misleading)
+    short = [c for c in has if c["ip"] and _ip_to_float(c["ip"]) < 3.0]
+    if short:
+        lines.append("⚠️ <b>Short Starts (unreliable — pulled early)</b>")
+        for c in short:
+            lines.append("   {} — {} IP | pred {} K actual {} K".format(
+                c["pitcher"], c["ip"], c["pred_k"], c["actual_k"]
+            ))
+        lines.append("")
 
-    lines.append("Score: <b>{}/{}</b> within 1.5 Ks ({:.0f}%)".format(hits, total, hit_pct))
-    if mae is not None:
-        lines.append("Avg error: <b>{} Ks</b>\n".format(mae))
+    # Best calls (closest predictions, not short starts)
+    clean = [c for c in has if not (c["ip"] and _ip_to_float(c["ip"]) < 3.0)]
+    best  = sorted(clean, key=lambda x: abs(x["diff"] or 99))[:4]
+    if best:
+        lines.append("✅ <b>Best Calls</b>")
+        for c in best:
+            lines.append("   <b>{}</b> — pred {} K · actual <b>{} K</b> ({:+.1f})".format(
+                c["pitcher"], c["pred_k"], c["actual_k"], c["diff"] or 0
+            ))
+        lines.append("")
 
-    for c in has_results:
-        pred_k   = c["pred_k"]
-        actual_k = c["actual_k"]
-        diff     = c["diff"]
+    # Biggest misses
+    worst = sorted(clean, key=lambda x: abs(x["diff"] or 0), reverse=True)[:4]
+    if worst and abs(worst[0]["diff"] or 0) > 1.5:
+        lines.append("❌ <b>Biggest Misses</b>")
+        for c in worst:
+            if abs(c["diff"] or 0) <= 1.5:
+                break
+            direction = "under" if (c["diff"] or 0) > 0 else "over"
+            lines.append("   <b>{}</b> — pred {} K · actual <b>{} K</b> ({:+.1f}, bet {} panned out)".format(
+                c["pitcher"], c["pred_k"], c["actual_k"], c["diff"] or 0, direction
+            ))
+        lines.append("")
 
-        if diff is None:
-            diff_str = "n/a"
-        elif diff > 0:
-            diff_str = "+{:.1f} ✅".format(diff) if c["hit"] else "+{:.1f} ❌".format(diff)
-        elif diff < 0:
-            diff_str = "{:.1f} ✅".format(diff) if c["hit"] else "{:.1f} ❌".format(diff)
-        else:
-            diff_str = "0.0 ✅"
-
-        ip_str   = " ({} IP)".format(c["ip"]) if c["ip"] else ""
-        note_str = " [{}]".format(c["game_note"]) if c["game_note"] else ""
-
-        lines.append(
-            "<b>{}</b>{}{}\n"
-            "   {} @ {}\n"
-            "   Pred: {} K  Actual: <b>{} K</b>  {}\n".format(
-                c["pitcher"], ip_str, note_str,
-                c["away_team"], c["home_team"],
-                pred_k, actual_k, diff_str,
-            )
-        )
-
-    if no_results:
-        lines.append("<i>No result: {}</i>".format(
-            ", ".join(c["pitcher"] for c in no_results)
+    # Compact full list
+    lines.append("<b>All Results</b>")
+    for c in sorted(has, key=lambda x: x["pred_k"] or 0, reverse=True):
+        mark = "✅" if c["hit"] else "❌"
+        ip   = " ({}ip)".format(c["ip"]) if c["ip"] else ""
+        lines.append("   {} <b>{}</b>{} — pred {} · actual {}".format(
+            mark, c["pitcher"], ip, c["pred_k"], c["actual_k"]
         ))
 
-    lines.append("{}".format(datetime.now().strftime("%I:%M %p ET")))
+    lines.append("\n⏰ {}".format(datetime.now().strftime("%I:%M %p ET")))
     return "\n".join(lines)
+
+
+def _ip_to_float(ip_str) -> float:
+    """Convert '5.2' (5 innings + 2 outs) to float innings."""
+    try:
+        parts = str(ip_str).split(".")
+        return int(parts[0]) + (int(parts[1]) / 3 if len(parts) > 1 else 0)
+    except Exception:
+        return 9.0
 
 
 # ======================================================
