@@ -211,10 +211,12 @@ def run_batter_predictions(games: pd.DataFrame) -> list:
             "pred_h":    preds.get("pred_h"),
             "pred_tb":   preds.get("pred_tb"),
             "pred_hr":   preds.get("pred_hr"),
+            "hr_pct":    preds.get("hr_pct"),
             "form_z":    preds.get("form_z", 0),
             "hot":       preds.get("hot", 0),
             "slump":     preds.get("slump", 0),
             "exit_velo": preds.get("exit_velo"),
+            "barrel":    preds.get("barrel"),
             "n_games":   preds.get("n_games", 0),
         })
 
@@ -232,24 +234,54 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
         lines.append(f"\n⏰ {datetime.now().strftime('%I:%M %p ET')}")
         return "\n".join(lines)
 
-    # Sort by predicted TB
+    # ── Top H/TB picks (sorted by TB) ──
     preds_sorted = sorted(
         predictions,
         key=lambda x: x.get("pred_tb") or 0,
         reverse=True
     )
 
-    for p in preds_sorted[:12]:  # top 12 batters
+    for p in preds_sorted[:12]:
         form_str = " 🔥" if p.get("hot") else (" 🥶" if p.get("slump") else "")
-        ev_str   = f" EV:{p['exit_velo']:.0f}" if p.get("exit_velo") else ""
+        hr_pct   = p.get("hr_pct")
+        hr_str   = f"{hr_pct}%" if hr_pct is not None else "?"
 
         lines.append(
             f"🏏 <b>{p['batter']}</b>{form_str}"
             f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}"
             f"\n   H: <b>{p['pred_h']}</b>  "
             f"TB: <b>{p['pred_tb']}</b>  "
-            f"HR: <b>{p['pred_hr']}</b>{ev_str}\n"
+            f"HR: <b>{hr_str}</b>\n"
         )
+
+    # ── HR Picks section ──
+    hr_picks = sorted(
+        [p for p in predictions if (p.get("hr_pct") or 0) >= 20],
+        key=lambda x: x.get("hr_pct") or 0,
+        reverse=True
+    )
+
+    if hr_picks:
+        lines.append("─" * 30)
+        lines.append("<b>🏠 HR Picks — Tonight's Best Bets</b>")
+        lines.append("<i>% = model's estimated HR probability</i>\n")
+
+        for p in hr_picks[:8]:
+            pct = p.get("hr_pct", 0)
+            barrel = p.get("barrel")
+            barrel_str = f" · barrel {barrel*100:.0f}%" if barrel else ""
+
+            if pct >= 35:
+                icon = "🔥"
+            elif pct >= 25:
+                icon = "⚡"
+            else:
+                icon = "📊"
+
+            lines.append(
+                f"{icon} <b>{p['batter']}</b> — <b>{pct}%</b>{barrel_str}"
+                f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}\n"
+            )
 
     lines.append(f"⏰ {datetime.now().strftime('%I:%M %p ET')}")
     return "\n".join(lines)
@@ -321,18 +353,34 @@ def main():
     predictions = run_batter_predictions(games)
     print(f"  ✅ {len(predictions)} batter predictions")
 
-    # Print summary
-    print(f"\n{'═'*55}")
+    # Print summary — sorted by TB
+    print(f"\n{'═'*62}")
     if predictions:
-        print(f"  {'BATTER':<25} {'H':>5} {'TB':>6} {'HR':>6}")
-        print(f"  {'-'*45}")
+        print(f"  {'BATTER':<25} {'H':>5} {'TB':>6} {'HR%':>6}")
+        print(f"  {'-'*52}")
         for p in sorted(predictions, key=lambda x: x.get("pred_tb") or 0, reverse=True)[:12]:
-            form = " 🔥" if p.get("hot") else (" 🥶" if p.get("slump") else "")
+            form  = " 🔥" if p.get("hot") else (" 🥶" if p.get("slump") else "")
+            hr_pct = p.get("hr_pct")
+            hr_str = f"{hr_pct}%" if hr_pct is not None else "  ?"
             print(f"  {p['batter']:<25} "
                   f"{p['pred_h']:>5.2f} "
                   f"{p['pred_tb']:>6.2f} "
-                  f"{p['pred_hr']:>6.3f}{form}")
-    print(f"{'═'*55}\n")
+                  f"{hr_str:>6}{form}")
+
+    # Print HR picks section — sorted by HR%
+    hr_picks = sorted(
+        [p for p in predictions if (p.get("hr_pct") or 0) >= 15],
+        key=lambda x: x.get("hr_pct") or 0,
+        reverse=True
+    )
+    if hr_picks:
+        print(f"\n  {'─'*52}")
+        print(f"  🏠 TOP HR PICKS")
+        print(f"  {'─'*52}")
+        for p in hr_picks[:10]:
+            barrel_str = f" barrel {p['barrel']*100:.0f}%" if p.get("barrel") else ""
+            print(f"  {p['batter']:<25} {p['hr_pct']:>3}%{barrel_str}")
+    print(f"{'═'*62}\n")
 
     date_str = datetime.now().strftime("%Y-%m-%d")
     filepath = save_batter_predictions(predictions, date_str)

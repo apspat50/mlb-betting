@@ -129,6 +129,8 @@ def fetch_recent_batter_games(batter_name: str,
     if cache_file.exists():
         df = pd.read_parquet(cache_file)
         df["game_date"] = pd.to_datetime(df["game_date"])
+        if "TB_no_hr" not in df.columns:
+            df["TB_no_hr"] = (df["TB"] - df["HR"] * 4).clip(lower=0)
         return df
 
     try:
@@ -230,6 +232,7 @@ def aggregate_batter_to_games(df: pd.DataFrame,
             "name":            batter_name,
             "H":               int(h),
             "TB":              int(tb),
+            "TB_no_hr":        int(max(0, tb - hr * 4)),
             "HR":              int(hr),
             "RBI":             int(rbi_total),
             "AB":              int(ab),
@@ -251,7 +254,7 @@ def aggregate_batter_to_games(df: pd.DataFrame,
     result = pd.DataFrame(games).sort_values("game_date").reset_index(drop=True)
 
     # Rolling averages
-    for stat in ["H","TB","HR"]:
+    for stat in ["H","TB","TB_no_hr","HR"]:
         result[f"{stat}_avg_7"]  = result[stat].rolling(7,  min_periods=1).mean()
         result[f"{stat}_avg_15"] = result[stat].rolling(15, min_periods=1).mean()
 
@@ -295,11 +298,21 @@ def build_batter_rolling_features(batter_name: str,
     f["bat_h_season"]  = h.mean()
     f["bat_h_std_L15"] = h.tail(15).std()
 
-    # ── Total Bases rolling ──
+    # ── Total Bases rolling (full TB for fallback) ──
     tb = p["TB"].astype(float)
     f["bat_tb_L7"]     = tb.tail(7).mean()
     f["bat_tb_L15"]    = tb.tail(15).mean()
     f["bat_tb_season"] = tb.mean()
+
+    # ── Non-HR Total Bases (singles + doubles + triples only) ──
+    if "TB_no_hr" in p.columns:
+        tb_nh = p["TB_no_hr"].astype(float)
+    else:
+        hr_col = p["HR"].astype(float)
+        tb_nh  = (tb - hr_col * 4).clip(lower=0)
+    f["bat_tb_no_hr_L7"]     = tb_nh.tail(7).mean()
+    f["bat_tb_no_hr_L15"]    = tb_nh.tail(15).mean()
+    f["bat_tb_no_hr_season"] = tb_nh.mean()
 
     # ── Home Runs rolling ──
     hr = p["HR"].astype(float)
@@ -534,47 +547,40 @@ def predict_batter_props(batter_name: str,
     pred_h = h_base
 
     # ── Total Bases ──
-    # More season weight than H because TB swings wildly on single HRs.
-    # Barrel % and hard hit % are the key drivers of extra bases.
-    tb_l7  = safe(feats.get("bat_tb_L7"))
-    tb_l15 = safe(feats.get("bat_tb_L15"))
-    tb_szn = safe(feats.get("bat_tb_season"))
-    xslg   = safe(feats.get("bat_xslg_L7"))
+    # Key fix: separate non-HR TB (stable) from HR contribution (volatile).
+    # Non-HR TB = singles + 2×doubles + 3×triples — predictable from form.
+    # HR component = pred_hr × 4 — comes from the HR model below.
+    # This prevents double-counting HR in both the TB rolling avg AND the barrel% adj.
+    tb_nh_l7  = safe(feats.get("bat_tb_no_hr_L7"))
+    tb_nh_l15 = safe(feats.get("bat_tb_no_hr_L15"))
+    tb_nh_szn = safe(feats.get("bat_tb_no_hr_season"))
 
-    if tb_l7 is not None and tb_l15 is not None and tb_szn is not None:
-        tb_base = tb_l7 * 0.30 + tb_l15 * 0.35 + tb_szn * 0.35
-    elif tb_l7 is not None and tb_szn is not None:
-        tb_base = tb_l7 * 0.50 + tb_szn * 0.50
+    if tb_nh_l7 is not None and tb_nh_l15 is not None and tb_nh_szn is not None:
+        tb_nh_base = tb_nh_l7 * 0.45 + tb_nh_l15 * 0.30 + tb_nh_szn * 0.25
+    elif tb_nh_l7 is not None and tb_nh_szn is not None:
+        tb_nh_base = tb_nh_l7 * 0.60 + tb_nh_szn * 0.40
     else:
-        tb_base = tb_szn
+        # Fallback: raw TB rolling minus estimated HR contribution
+        tb_szn = safe(feats.get("bat_tb_season"))
+        hr_szn = safe(feats.get("bat_hr_season")) or 0.0
+        tb_nh_base = max(0.0, tb_szn - hr_szn * 4) if tb_szn is not None else None
 
-    # xSLG stabilizes TB prediction against HR variance
-    if xslg is not None and tb_base is not None:
-        xtb = xslg * 3.8
-        tb_base = tb_base * 0.75 + xtb * 0.25
+    # Hard hit % nudge for doubles/triples (modest — not barrel-driven)
+    if hard_hit is not None and tb_nh_base is not None:
+        hh_adj = 1.0 + np.clip((hard_hit - 0.37) * 0.6, -0.07, 0.10)
+        tb_nh_base = tb_nh_base * hh_adj
 
-    # Barrel % — primary driver of extra bases (league avg ~7%)
-    # A batter at 15% barrel rate hits for way more TB per game
-    if barrel is not None and tb_base is not None:
-        barrel_adj = 1.0 + np.clip((barrel - 0.07) * 4.0, -0.15, 0.35)
-        tb_base = tb_base * barrel_adj
-
-    # Hard hit % — extra boost for batters making hard contact recently
-    if hard_hit is not None and tb_base is not None:
-        hh_adj = 1.0 + np.clip((hard_hit - 0.37) * 1.5, -0.12, 0.20)
-        tb_base = tb_base * hh_adj
-
-    # Platoon split for TB
+    # Platoon split for non-HR TB
     vs_tb = safe(feats.get("bat_tb_vs_hand_L20"))
-    if vs_tb is not None and tb_base is not None:
-        tb_base = vs_tb * 0.45 + tb_base * 0.55
-
-    pred_tb = (tb_base * park_f) if tb_base is not None else None
+    if vs_tb is not None and tb_nh_base is not None:
+        vs_hr_hand = safe(feats.get("bat_hr_vs_hand_L20")) or 0.0
+        vs_tb_nh   = max(0.0, vs_tb - vs_hr_hand * 4)
+        tb_nh_base = vs_tb_nh * 0.40 + tb_nh_base * 0.60
 
     # ── Home Runs ──
-    # HR is the hardest to predict per game — use heaviest season weighting.
-    # Barrel % is the single best predictor. Hard hit % is secondary.
-    # Recent 15-game rate is very noisy — don't overweight it.
+    # Season-weighted heavily — HR is too rare per game for recent form to dominate.
+    # Barrel % is the single best predictor (3x multiplier, up to +30%).
+    # Hard hit % is secondary (1x multiplier, up to +15%).
     hr_l15 = safe(feats.get("bat_hr_L15"))
     hr_l30 = safe(feats.get("bat_hr_L30"))
     hr_szn = safe(feats.get("bat_hr_season"))
@@ -588,14 +594,14 @@ def predict_batter_props(batter_name: str,
     else:
         hr_base = None
 
-    # Barrel % is king for HR — much heavier adjustment than TB
+    # Barrel % — best HR predictor; reduced multiplier (3x) for realistic probabilities
     if barrel is not None and hr_base is not None:
-        barrel_adj = 1.0 + np.clip((barrel - 0.07) * 6.0, -0.25, 0.50)
+        barrel_adj = 1.0 + np.clip((barrel - 0.07) * 3.0, -0.20, 0.30)
         hr_base = hr_base * barrel_adj
 
-    # Hard hit % secondary boost
+    # Hard hit % — secondary boost
     if hard_hit is not None and hr_base is not None:
-        hh_adj = 1.0 + np.clip((hard_hit - 0.37) * 2.0, -0.15, 0.30)
+        hh_adj = 1.0 + np.clip((hard_hit - 0.37) * 1.0, -0.12, 0.15)
         hr_base = hr_base * hh_adj
 
     # Platoon split for HR
@@ -605,10 +611,21 @@ def predict_batter_props(batter_name: str,
 
     pred_hr = (hr_base * park_f) if hr_base is not None else None
 
+    # TB = non-HR base + HR contribution (4 TB per HR)
+    if tb_nh_base is not None:
+        hr_tb = (pred_hr * 4) if pred_hr is not None else 0.0
+        pred_tb = (tb_nh_base + hr_tb) * park_f
+    else:
+        pred_tb = None
+
+    # HR probability as percentage (cap at 70% — no one homers more than that)
+    hr_pct = min(round(pred_hr * 100), 70) if pred_hr is not None else None
+
     return {
         "pred_h":     round(pred_h, 2)  if pred_h  is not None else None,
         "pred_tb":    round(pred_tb, 2) if pred_tb is not None else None,
         "pred_hr":    round(pred_hr, 3) if pred_hr is not None else None,
+        "hr_pct":     hr_pct,
         "form_z":     feats.get("bat_form_z", 0),
         "slump":      feats.get("bat_slump", 0),
         "hot":        feats.get("bat_hot", 0),
