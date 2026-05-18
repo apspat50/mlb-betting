@@ -5,6 +5,9 @@ on:
     - cron: '30 3 * * *'  # 11:30 PM EDT (03:30 UTC next day)
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   check-results:
     runs-on: ubuntu-latest
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,3 +47,12 @@ jobs:
         run: python daily_results.py --date ${{ steps.date.outputs.date }}
         env:
           PYTHONUNBUFFERED: "1"
+
+      - name: Save results back to repo
+        continue-on-error: true
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add predictions/
+          git diff --staged --quiet || git commit -m "results: ${{ steps.date.outputs.date }}"
+          git push origin HEAD:main || (git pull origin main && git push origin HEAD:main)

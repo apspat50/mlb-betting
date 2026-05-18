@@ -33,6 +33,41 @@ PREDICTIONS_DIR.mkdir(exist_ok=True)
 
 warnings.filterwarnings("ignore")
 
+
+def load_pitcher_accuracy(days: int = 60) -> dict:
+    """
+    Read saved pitcher_results from recent predictions/*.json files.
+    Returns {pitcher_name: {"actual": [k1,...], "pred": [p1,...]}}
+    Skips short starts (< 3 IP).
+    """
+    today = datetime.now()
+    data  = {}
+    for i in range(1, days + 1):
+        fp = PREDICTIONS_DIR / (today - timedelta(days=i)).strftime("%Y-%m-%d.json")
+        if not fp.exists():
+            continue
+        try:
+            saved = json.load(open(fp))
+        except Exception:
+            continue
+        for r in saved.get("pitcher_results", []):
+            name     = r.get("pitcher", "")
+            actual_k = r.get("actual_k")
+            pred_k   = r.get("pred_k")
+            ip       = str(r.get("ip") or "9")
+            if not name or actual_k is None or pred_k is None:
+                continue
+            try:
+                if float(ip.split(".")[0]) < 3:
+                    continue
+            except Exception:
+                pass
+            if name not in data:
+                data[name] = {"actual": [], "pred": []}
+            data[name]["actual"].append(int(actual_k))
+            data[name]["pred"].append(float(pred_k))
+    return data
+
 CONFIG_FILE = Path("config.json")
 MODELS_DIR  = Path("saved_models") / "props"
 DATA_DIR    = Path("props_data")
@@ -481,88 +516,65 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
         lines.append(datetime.now().strftime("%I:%M %p ET"))
         return "\n".join(lines)
 
+    accuracy = load_pitcher_accuracy()
     preds = sorted(predictions, key=lambda x: x["pred_k_total"], reverse=True)
 
     # ── BET OVER: pred well above typical 4.5-5.5 FanDuel line ──
-    over_bets = [p for p in preds if p["pred_k_total"] >= 6.5]
+    over_bets  = [p for p in preds if p["pred_k_total"] >= 6.5]
     # ── BET UNDER: pred well below typical line ──
     under_bets = [p for p in preds if p["pred_k_total"] <= 3.5]
     # ── COINFLIP: compare to your specific FanDuel line ──
-    middle = [p for p in preds if 3.5 < p["pred_k_total"] < 6.5]
+    middle     = [p for p in preds if 3.5 < p["pred_k_total"] < 6.5]
 
-    def _k_history(p: dict) -> str:
-        """K history line with sample-size awareness."""
-        n        = p.get("n_starts_checked", 0)
-        ks       = p.get("recent_ks", [])
-        line     = p.get("over_line")
-        cnt      = p.get("over_count")
-        small    = p.get("small_sample", False)
-        season_n = p.get("season_starts", 0)
+    def _acc_lines(pitcher: str, pred_k: float) -> str:
+        hist    = accuracy.get(pitcher, {})
+        actual  = hist.get("actual", [])
+        pred_h  = hist.get("pred",   [])
+        n       = min(len(actual), 8)
+        if n < 3:
+            return ""
+        recent_a = actual[-n:]
+        recent_p = pred_h[-n:]
+        over_proj   = sum(1 for a, p2 in zip(recent_a, recent_p) if a > p2)
+        thresh      = max(5, round(pred_k))
+        over_thresh = sum(1 for a in recent_a if a >= thresh)
+        return (
+            "   Hit over projection {} of last {} starts ({:.0f}%)\n"
+            "   Had {}+ Ks in {} of last {} starts"
+        ).format(over_proj, n, over_proj / n * 100, thresh, over_thresh, n)
 
-        parts = []
-
-        # K history
-        if n < 2:
-            if season_n == 0:
-                parts.append("   📊 No starts this season yet")
-            else:
-                parts.append("   📊 Only {} start{} this season — insufficient data".format(
-                    season_n, "s" if season_n != 1 else ""
-                ))
-        elif line is not None and cnt is not None:
-            pct        = round(cnt / n * 100)
-            recent_str = ", ".join(str(k) for k in ks)
-            sample_tag = " ⚠️ small sample" if small else ""
-            label      = "last {} of {} starts this season".format(n, season_n) \
-                         if season_n > n else "{} starts this season".format(n)
-            parts.append("   📊 Hit over {} in {}/{} ({:.0f}%){} | {}: {}".format(
-                line, cnt, n, pct, sample_tag, label, recent_str
-            ))
-
-        return "\n".join(parts)
+    def _entry(p: dict) -> str:
+        role = p.get("role", "")
+        hot  = " 🔥" if p.get("form_z", 0) > 1.5 else (" 🥶" if p.get("form_z", 0) < -1.5 else "")
+        opp  = " (opp K-happy)" if p.get("opp_kpct", 0.22) > 0.26 else ""
+        acc  = _acc_lines(p["pitcher"], p["pred_k_total"])
+        body = (
+            "<b>{}</b> ({}){}\n"
+            "   {} @ {} | {}\n"
+            "   Predicted: <b>{} Ks</b>{}"
+        ).format(p["pitcher"], role, hot, p["away_team"], p["home_team"],
+                 p["time"], p["pred_k_total"], opp)
+        if acc:
+            body += "\n" + acc
+        return body
 
     if over_bets:
         lines.append("🎯 <b>BET OVER on Ks</b>")
         lines.append("<i>If FanDuel line is below these projections, bet over</i>")
         for p in over_bets:
-            hot = " 🔥" if p.get("form_z", 0) > 1.5 else ""
-            opp = " (opp K-happy)" if p.get("opp_kpct", 0.22) > 0.26 else ""
-            hist = _k_history(p)
-            lines.append(
-                "🔥 <b>{}</b>{} — <b>{} K</b> ({} K/9 × {}ip){}"
-                "\n{}"
-                "\n   {} @ {} | {}\n".format(
-                    p["pitcher"], hot, p["pred_k_total"], p["pred_k9"], p["avg_ip"], opp,
-                    hist,
-                    p["away_team"], p["home_team"], p["time"]
-                )
-            )
+            lines.append(_entry(p) + "\n")
 
     if under_bets:
         lines.append("📉 <b>BET UNDER on Ks</b>")
         lines.append("<i>If FanDuel line is above 4.5, lean under</i>")
         for p in under_bets:
-            hist = _k_history(p)
-            lines.append(
-                "📉 <b>{}</b> — <b>{} K</b> ({} K/9 × {}ip)"
-                "\n{}"
-                "\n   {} @ {} | {}\n".format(
-                    p["pitcher"], p["pred_k_total"], p["pred_k9"], p["avg_ip"],
-                    hist,
-                    p["away_team"], p["home_team"], p["time"]
-                )
-            )
+            lines.append(_entry(p) + "\n")
 
     if middle:
         lines.append("⚖️ <b>Compare to Your FanDuel Line</b>")
         lines.append("<i>Bet over if pred &gt; line by 1+, under if pred &lt; line by 1+</i>")
         for p in middle:
-            form = " 🔥" if p.get("form_z", 0) > 1.5 else (" 🥶" if p.get("form_z", 0) < -1.5 else "")
-            hist = _k_history(p)
-            lines.append("   <b>{}</b>{} — {} K · {} @ {}{}".format(
-                p["pitcher"], form, p["pred_k_total"], p["away_team"], p["home_team"],
-                "\n" + hist if hist else ""
-            ))
+            lines.append(_entry(p) + "\n")
 
     lines.append("\n⏰ {}".format(datetime.now().strftime("%I:%M %p ET")))
     return "\n".join(lines)
