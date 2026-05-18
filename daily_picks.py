@@ -411,19 +411,43 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 form_z   = feats.get("sc_form_z") or feats.get("p_form_z") or 0
                 opp_kpct = feats.get("opp_kpct", 0.22) or 0.22
 
+                # -- HISTORICAL K CONSISTENCY --
+                # Check how often this pitcher has hit a threshold close to
+                # our prediction in recent starts. Useful for betting context.
+                recent_ks        = []
+                over_line        = None
+                over_count       = None
+                n_starts_checked = 0
+
+                if mlb_logs is not None and not mlb_logs.empty:
+                    past = mlb_logs[mlb_logs["game_date"] < today].sort_values("game_date")
+                    if len(past) >= 2:
+                        last6 = past.tail(6)
+                        recent_ks        = [int(k) for k in last6["SO"].tolist()]
+                        n_starts_checked = len(recent_ks)
+                        # Nearest .5 line just below the prediction
+                        import math
+                        over_line  = math.floor(pred_per_start - 0.5) + 0.5
+                        over_line  = max(0.5, over_line)
+                        over_count = sum(1 for k in recent_ks if k > over_line)
+
                 predictions.append({
-                    "pitcher":      pitcher,
-                    "role":         role,
-                    "home_team":    game["home_team"],
-                    "away_team":    game["away_team"],
-                    "time":         game["time"],
-                    "opp_team":     opp_team,
-                    "pred_k9":      round(pred_k9, 1),
-                    "pred_k_total": round(pred_per_start, 1),
-                    "avg_ip":       round(avg_ip, 1),
-                    "form_z":       round(form_z, 2),
-                    "opp_kpct":     round(opp_kpct, 3),
-                    "data_source":  data_source,
+                    "pitcher":           pitcher,
+                    "role":              role,
+                    "home_team":         game["home_team"],
+                    "away_team":         game["away_team"],
+                    "time":              game["time"],
+                    "opp_team":          opp_team,
+                    "pred_k9":           round(pred_k9, 1),
+                    "pred_k_total":      round(pred_per_start, 1),
+                    "avg_ip":            round(avg_ip, 1),
+                    "form_z":            round(form_z, 2),
+                    "opp_kpct":          round(opp_kpct, 3),
+                    "data_source":       data_source,
+                    "recent_ks":         recent_ks,
+                    "over_line":         over_line,
+                    "over_count":        over_count,
+                    "n_starts_checked":  n_starts_checked,
                 })
 
             except Exception as e:
@@ -455,16 +479,33 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
     # ── COINFLIP: compare to your specific FanDuel line ──
     middle = [p for p in preds if 3.5 < p["pred_k_total"] < 6.5]
 
+    def _k_history(p: dict) -> str:
+        """One-line K history string: 'Hit over 6.5 in 4/6 (67%) | Recent: 8,6,7,4,9,6'"""
+        n     = p.get("n_starts_checked", 0)
+        ks    = p.get("recent_ks", [])
+        line  = p.get("over_line")
+        cnt   = p.get("over_count")
+        if n < 2 or line is None or cnt is None:
+            return ""
+        pct  = round(cnt / n * 100)
+        recent_str = ", ".join(str(k) for k in ks)
+        return "   📊 Hit over {} in {}/{} starts ({}%) | Recent: {}".format(
+            line, cnt, n, pct, recent_str
+        )
+
     if over_bets:
         lines.append("🎯 <b>BET OVER on Ks</b>")
         lines.append("<i>If FanDuel line is below these projections, bet over</i>")
         for p in over_bets:
             hot = " 🔥" if p.get("form_z", 0) > 1.5 else ""
             opp = " (opp K-happy)" if p.get("opp_kpct", 0.22) > 0.26 else ""
+            hist = _k_history(p)
             lines.append(
                 "🔥 <b>{}</b>{} — <b>{} K</b> ({} K/9 × {}ip){}"
+                "\n{}"
                 "\n   {} @ {} | {}\n".format(
                     p["pitcher"], hot, p["pred_k_total"], p["pred_k9"], p["avg_ip"], opp,
+                    hist,
                     p["away_team"], p["home_team"], p["time"]
                 )
             )
@@ -473,10 +514,13 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
         lines.append("📉 <b>BET UNDER on Ks</b>")
         lines.append("<i>If FanDuel line is above 4.5, lean under</i>")
         for p in under_bets:
+            hist = _k_history(p)
             lines.append(
                 "📉 <b>{}</b> — <b>{} K</b> ({} K/9 × {}ip)"
+                "\n{}"
                 "\n   {} @ {} | {}\n".format(
                     p["pitcher"], p["pred_k_total"], p["pred_k9"], p["avg_ip"],
+                    hist,
                     p["away_team"], p["home_team"], p["time"]
                 )
             )
@@ -486,8 +530,10 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
         lines.append("<i>Bet over if pred &gt; line by 1+, under if pred &lt; line by 1+</i>")
         for p in middle:
             form = " 🔥" if p.get("form_z", 0) > 1.5 else (" 🥶" if p.get("form_z", 0) < -1.5 else "")
-            lines.append("   <b>{}</b>{} — {} K · {} @ {}".format(
-                p["pitcher"], form, p["pred_k_total"], p["away_team"], p["home_team"]
+            hist = _k_history(p)
+            lines.append("   <b>{}</b>{} — {} K · {} @ {}{}".format(
+                p["pitcher"], form, p["pred_k_total"], p["away_team"], p["home_team"],
+                "\n" + hist if hist else ""
             ))
 
     lines.append("\n⏰ {}".format(datetime.now().strftime("%I:%M %p ET")))
@@ -581,8 +627,19 @@ def main():
             matchup = "{} @ {}".format(p["away_team"][:11], p["home_team"][:11])
             form    = " HOT" if p.get("form_z", 0) > 1.5 else (
                       " COLD" if p.get("form_z", 0) < -1.5 else "")
-            print("  {:<25} {:<28} {:>7.1f} {:>5.1f}{}".format(
-                p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form
+            n   = p.get("n_starts_checked", 0)
+            cnt = p.get("over_count")
+            line = p.get("over_line")
+            ks   = p.get("recent_ks", [])
+            if n >= 2 and cnt is not None and line is not None:
+                pct      = round(cnt / n * 100)
+                hist_str = "  over {}: {}/{} ({}%) [{}]".format(
+                    line, cnt, n, pct, ",".join(str(k) for k in ks)
+                )
+            else:
+                hist_str = ""
+            print("  {:<25} {:<28} {:>7.1f} {:>5.1f}{}{}".format(
+                p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form, hist_str
             ))
     print("=" * 60 + "\n")
 
