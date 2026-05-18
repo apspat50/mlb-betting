@@ -314,10 +314,9 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
     if hit_bets:
         lines.append("🎯 <b>HIT BETS</b> — pred ≥1.2 H <i>(bet over 0.5 hits line)</i>")
         for p in hit_bets[:8]:
-            hot  = " 🔥" if p.get("hot") else ""
             acc  = _h_acc(p["batter"])
             matchup = f"   {_esc(p['away_team'])} @ {_esc(p['home_team'])} | {_esc(p['time'])}"
-            entry = f"✅ <b>{_esc(p['batter'])}</b>{hot} — <b>{p['pred_h']} H</b> · TB {p['pred_tb']}\n{matchup}"
+            entry = f"✅ <b>{_esc(p['batter'])}</b> — <b>{p['pred_h']} H</b> · TB {p['pred_tb']}\n{matchup}"
             if acc:
                 entry += "\n" + acc
             lines.append(entry + "\n")
@@ -350,12 +349,6 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
                 entry += "\n" + acc
             lines.append(entry + "\n")
 
-    # ── SKIP / COLD: slumping batters to avoid ──
-    cold = [p for p in predictions if p.get("slump") and (p.get("pred_h") or 0) < 0.8]
-    if cold:
-        lines.append("🥶 <b>AVOID / COLD STREAKS</b>")
-        for p in cold[:4]:
-            lines.append(f"   ❌ {_esc(p['batter'])} — pred {p['pred_h']} H (slumping)")
 
     lines.append(f"\n⏰ {datetime.now().strftime('%I:%M %p ET')}")
     return "\n".join(lines)

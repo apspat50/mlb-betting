@@ -456,7 +456,16 @@ def run_k_predictions(games: pd.DataFrame) -> list:
 
                 # Hard cap on K total — no starter realistically gets 13+ Ks
                 pred_per_start = min(pred_per_start, 13.0)
-
+                
+                # Regression-to-mean calibration (backtested on 700 outngs):
+                # low-K pitchers are underpredicted; high-K pitchers are overpredicted.
+                if pred_per_start < 4.5:
+                    pred_per_start += 0.77
+                elif pred_per_start >= 6.5:
+                    pred_per_start -= 0.97
+                elif pred_per_start >= 5.5:
+                    pred_per_start -= 0.68
+                pred_per_start = round(max(0.5, pred_per_start), 1)
                 avg_ip = feats.get("sc_ip_L3")
                 if not avg_ip or avg_ip > 9 or avg_ip < 1:
                     avg_ip = 5.5

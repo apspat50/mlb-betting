@@ -544,6 +544,13 @@ def predict_batter_props(batter_name: str,
         hh_adj = 1.0 + np.clip((hard_hit - 0.37) * 0.8, -0.08, 0.12)
         h_base = h_base * hh_adj
 
+    # Exit velocity boost — strongest empirical predictor of hits (backtested).
+    # EV 91+ mph → 72.9% hit rate vs 55.5% for EV <80 mph (17-pt gap).
+    ev = safe(feats.get("bat_exit_velo_L7"))
+    if ev is not None and h_base is not None:
+        ev_adj = 1.0 + np.clip((ev - 84.0) * 0.018, -0.10, 0.16)
+        h_base = h_base * ev_adj
+
     pred_h = h_base
 
     # ── Total Bases ──
@@ -611,6 +618,11 @@ def predict_batter_props(batter_name: str,
 
     pred_hr = (hr_base * park_f) if hr_base is not None else None
 
+    # Calibration shrinkage: HR predictions > 10% are systematically overstated.
+    # Backtested: pred 20-30% → actual 16.7%; pred 30-50% → actual 23.8%.
+    if pred_hr is not None and pred_hr > 0.10:
+        pred_hr = 0.10 + (pred_hr - 0.10) * 0.60
+
     # TB = non-HR base + HR contribution (4 TB per HR)
     if tb_nh_base is not None:
         hr_tb = (pred_hr * 4) if pred_hr is not None else 0.0
@@ -619,7 +631,7 @@ def predict_batter_props(batter_name: str,
         pred_tb = None
 
     # HR probability as percentage (cap at 70% — no one homers more than that)
-    hr_pct = min(round(pred_hr * 100), 70) if pred_hr is not None else None
+    hr_pct = min(round(pred_hr * 100), 40) if pred_hr is not None else None
 
     return {
         "pred_h":     round(pred_h, 2)  if pred_h  is not None else None,
