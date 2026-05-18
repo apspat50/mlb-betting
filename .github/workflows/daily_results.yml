@@ -55,7 +55,7 @@ jobs:
           git add predictions/
           git diff --staged --quiet || git commit -m "results: ${{ steps.date.outputs.date }}"
           for i in 1 2 3 4; do
-            git pull --rebase origin main && git push origin HEAD && break
+            git pull --no-rebase origin main && git push origin HEAD && break
             echo "Push attempt $i failed, retrying in ${i}s..."
             sleep $i
           done
