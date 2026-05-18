@@ -156,6 +156,96 @@ def fetch_todays_games(date_str=None) -> pd.DataFrame:
 
 
 # ======================================================
+# INJURY STATUS (MLB Transactions API)
+# ======================================================
+
+def fetch_injury_flags(pitcher_names: list) -> dict:
+    """
+    Check MLB transactions from the last 30 days for IL placements and
+    activations. Returns dict: pitcher_name -> {status, detail}
+
+    status values:
+      'on_il'              — placed on IL, not yet activated
+      'recently_activated' — activated from IL within last 21 days
+    """
+    from datetime import timedelta
+    today     = datetime.now()
+    lookback  = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    today_str = today.strftime("%Y-%m-%d")
+
+    try:
+        r = requests.get(
+            "https://statsapi.mlb.com/api/v1/transactions",
+            params={"startDate": lookback, "endDate": today_str, "sportId": 1},
+            timeout=10,
+        )
+        r.raise_for_status()
+        transactions = r.json().get("transactions", [])
+    except Exception:
+        return {}
+
+    # Build a per-person event timeline
+    from collections import defaultdict
+    person_events = defaultdict(list)
+    for txn in transactions:
+        full_name = txn.get("person", {}).get("fullName", "")
+        if not full_name:
+            continue
+        txn_type = txn.get("typeDesc", "")
+        txn_date = txn.get("date", "")[:10]
+        person_events[full_name].append({"type": txn_type, "date": txn_date})
+
+    flags = {}
+    for pitcher in pitcher_names:
+        p_last = pitcher.split()[-1].lower()
+
+        # Find matching player in transactions (last-name match)
+        matched_events = []
+        for full_name, events in person_events.items():
+            if p_last in full_name.lower():
+                matched_events = events
+                break
+
+        if not matched_events:
+            continue
+
+        # Sort by date and determine current status
+        matched_events.sort(key=lambda x: x["date"])
+        last_il   = None
+        last_act  = None
+        for ev in matched_events:
+            t = ev["type"]
+            if "Placement" in t and "IL" in t:
+                last_il  = ev["date"]
+                last_act = None   # reset — placement after activation
+            elif "Activation" in t:
+                last_act = ev["date"]
+                last_il  = None   # activated means off IL
+
+        if last_il:
+            try:
+                days_ago = (today - datetime.strptime(last_il, "%Y-%m-%d")).days
+            except Exception:
+                days_ago = "?"
+            flags[pitcher] = {
+                "status": "on_il",
+                "detail": "⚠️ On IL (placed {} days ago)".format(days_ago),
+            }
+        elif last_act:
+            try:
+                days_ago = (today - datetime.strptime(last_act, "%Y-%m-%d")).days
+            except Exception:
+                days_ago = "?"
+            if isinstance(days_ago, int) and days_ago <= 21:
+                flags[pitcher] = {
+                    "status": "recently_activated",
+                    "detail": "🏥 Returning from IL ({} days ago)".format(days_ago),
+                }
+
+    return flags
+
+
+# ======================================================
 # PITCHER K PREDICTIONS -- STATCAST FIRST
 # ======================================================
 
@@ -236,8 +326,21 @@ def run_k_predictions(games: pd.DataFrame) -> list:
         todays_pitchers, seasons=[cur_year, cur_year - 1]
     )
 
+    # Fetch injury flags for all of today's pitchers
+    todays_pitcher_names = []
+    for _, g in games.iterrows():
+        for sp in [g.get("home_sp",""), g.get("away_sp","")]:
+            if sp and sp != "TBD":
+                todays_pitcher_names.append(sp)
+    print("  Checking injury/IL status...")
+    injury_flags = fetch_injury_flags(todays_pitcher_names)
+    if injury_flags:
+        for name, flag in injury_flags.items():
+            print("    {} — {}".format(name, flag["detail"]))
+
     predictions = []
     today = datetime.now()
+    season_start = datetime(today.year, 3, 1)  # current season only
 
     for _, game in games.iterrows():
         for pitcher, opp_team, home_team, role in [
@@ -411,19 +514,56 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                 form_z   = feats.get("sc_form_z") or feats.get("p_form_z") or 0
                 opp_kpct = feats.get("opp_kpct", 0.22) or 0.22
 
+                # -- HISTORICAL K CONSISTENCY (current season only) --
+                # Use current season starts so we don't mix a healthy April
+                # with a rusty post-IL September. Show all starts if <6,
+                # last 6 if they have more. Flag small samples.
+                recent_ks        = []
+                over_line        = None
+                over_count       = None
+                n_starts_checked = 0
+                season_starts    = 0
+                small_sample     = False
+
+                if mlb_logs is not None and not mlb_logs.empty:
+                    past_all = mlb_logs[mlb_logs["game_date"] < today].sort_values("game_date")
+                    past     = past_all[past_all["game_date"] >= season_start]
+                    season_starts = len(past)
+
+                    if season_starts >= 2:
+                        # Use last 6 if available, otherwise all season starts
+                        window           = past.tail(min(6, season_starts))
+                        recent_ks        = [int(k) for k in window["SO"].tolist()]
+                        n_starts_checked = len(recent_ks)
+                        small_sample     = season_starts < 5
+
+                        import math
+                        over_line  = math.floor(pred_per_start - 0.5) + 0.5
+                        over_line  = max(0.5, over_line)
+                        over_count = sum(1 for k in recent_ks if k > over_line)
+
+                inj = injury_flags.get(pitcher, {})
                 predictions.append({
-                    "pitcher":      pitcher,
-                    "role":         role,
-                    "home_team":    game["home_team"],
-                    "away_team":    game["away_team"],
-                    "time":         game["time"],
-                    "opp_team":     opp_team,
-                    "pred_k9":      round(pred_k9, 1),
-                    "pred_k_total": round(pred_per_start, 1),
-                    "avg_ip":       round(avg_ip, 1),
-                    "form_z":       round(form_z, 2),
-                    "opp_kpct":     round(opp_kpct, 3),
-                    "data_source":  data_source,
+                    "pitcher":           pitcher,
+                    "role":              role,
+                    "home_team":         game["home_team"],
+                    "away_team":         game["away_team"],
+                    "time":              game["time"],
+                    "opp_team":          opp_team,
+                    "pred_k9":           round(pred_k9, 1),
+                    "pred_k_total":      round(pred_per_start, 1),
+                    "avg_ip":            round(avg_ip, 1),
+                    "form_z":            round(form_z, 2),
+                    "opp_kpct":          round(opp_kpct, 3),
+                    "data_source":       data_source,
+                    "recent_ks":         recent_ks,
+                    "over_line":         over_line,
+                    "over_count":        over_count,
+                    "n_starts_checked":  n_starts_checked,
+                    "season_starts":     season_starts,
+                    "small_sample":      small_sample,
+                    "injury_status":     inj.get("status", ""),
+                    "injury_detail":     inj.get("detail", ""),
                 })
 
             except Exception as e:
@@ -455,16 +595,55 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
     # ── COINFLIP: compare to your specific FanDuel line ──
     middle = [p for p in preds if 3.5 < p["pred_k_total"] < 6.5]
 
+    def _k_history(p: dict) -> str:
+        """K history line with sample-size awareness and injury flag."""
+        inj_detail = p.get("injury_detail", "")
+        n          = p.get("n_starts_checked", 0)
+        ks         = p.get("recent_ks", [])
+        line       = p.get("over_line")
+        cnt        = p.get("over_count")
+        small      = p.get("small_sample", False)
+        season_n   = p.get("season_starts", 0)
+
+        parts = []
+
+        # Injury flag goes first
+        if inj_detail:
+            parts.append("   {}".format(inj_detail))
+
+        # K history
+        if n < 2:
+            if season_n == 0:
+                parts.append("   📊 No starts this season yet")
+            else:
+                parts.append("   📊 Only {} start{} this season — insufficient data".format(
+                    season_n, "s" if season_n != 1 else ""
+                ))
+        elif line is not None and cnt is not None:
+            pct        = round(cnt / n * 100)
+            recent_str = ", ".join(str(k) for k in ks)
+            sample_tag = " ⚠️ small sample" if small else ""
+            label      = "last {} of {} starts this season".format(n, season_n) \
+                         if season_n > n else "{} starts this season".format(n)
+            parts.append("   📊 Hit over {} in {}/{} ({:.0f}%){} | {}: {}".format(
+                line, cnt, n, pct, sample_tag, label, recent_str
+            ))
+
+        return "\n".join(parts)
+
     if over_bets:
         lines.append("🎯 <b>BET OVER on Ks</b>")
         lines.append("<i>If FanDuel line is below these projections, bet over</i>")
         for p in over_bets:
             hot = " 🔥" if p.get("form_z", 0) > 1.5 else ""
             opp = " (opp K-happy)" if p.get("opp_kpct", 0.22) > 0.26 else ""
+            hist = _k_history(p)
             lines.append(
                 "🔥 <b>{}</b>{} — <b>{} K</b> ({} K/9 × {}ip){}"
+                "\n{}"
                 "\n   {} @ {} | {}\n".format(
                     p["pitcher"], hot, p["pred_k_total"], p["pred_k9"], p["avg_ip"], opp,
+                    hist,
                     p["away_team"], p["home_team"], p["time"]
                 )
             )
@@ -473,10 +652,13 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
         lines.append("📉 <b>BET UNDER on Ks</b>")
         lines.append("<i>If FanDuel line is above 4.5, lean under</i>")
         for p in under_bets:
+            hist = _k_history(p)
             lines.append(
                 "📉 <b>{}</b> — <b>{} K</b> ({} K/9 × {}ip)"
+                "\n{}"
                 "\n   {} @ {} | {}\n".format(
                     p["pitcher"], p["pred_k_total"], p["pred_k9"], p["avg_ip"],
+                    hist,
                     p["away_team"], p["home_team"], p["time"]
                 )
             )
@@ -486,8 +668,10 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
         lines.append("<i>Bet over if pred &gt; line by 1+, under if pred &lt; line by 1+</i>")
         for p in middle:
             form = " 🔥" if p.get("form_z", 0) > 1.5 else (" 🥶" if p.get("form_z", 0) < -1.5 else "")
-            lines.append("   <b>{}</b>{} — {} K · {} @ {}".format(
-                p["pitcher"], form, p["pred_k_total"], p["away_team"], p["home_team"]
+            hist = _k_history(p)
+            lines.append("   <b>{}</b>{} — {} K · {} @ {}{}".format(
+                p["pitcher"], form, p["pred_k_total"], p["away_team"], p["home_team"],
+                "\n" + hist if hist else ""
             ))
 
     lines.append("\n⏰ {}".format(datetime.now().strftime("%I:%M %p ET")))
@@ -581,8 +765,19 @@ def main():
             matchup = "{} @ {}".format(p["away_team"][:11], p["home_team"][:11])
             form    = " HOT" if p.get("form_z", 0) > 1.5 else (
                       " COLD" if p.get("form_z", 0) < -1.5 else "")
-            print("  {:<25} {:<28} {:>7.1f} {:>5.1f}{}".format(
-                p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form
+            n   = p.get("n_starts_checked", 0)
+            cnt = p.get("over_count")
+            line = p.get("over_line")
+            ks   = p.get("recent_ks", [])
+            if n >= 2 and cnt is not None and line is not None:
+                pct      = round(cnt / n * 100)
+                hist_str = "  over {}: {}/{} ({}%) [{}]".format(
+                    line, cnt, n, pct, ",".join(str(k) for k in ks)
+                )
+            else:
+                hist_str = ""
+            print("  {:<25} {:<28} {:>7.1f} {:>5.1f}{}{}".format(
+                p["pitcher"], matchup, p["pred_k_total"], p["pred_k9"], form, hist_str
             ))
     print("=" * 60 + "\n")
 
