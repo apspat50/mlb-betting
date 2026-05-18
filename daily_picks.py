@@ -97,6 +97,11 @@ def load_config() -> dict:
 # TELEGRAM
 # ======================================================
 
+def _esc(text) -> str:
+    """Escape HTML special chars in plain-text fields."""
+    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def send_telegram(message: str, token: str, chat_id: str) -> bool:
     if not token or not chat_id:
         print("  Add telegram_token and chat_id to config.json")
@@ -113,6 +118,25 @@ def send_telegram(message: str, token: str, chat_id: str) -> bool:
     except Exception as e:
         print("  Telegram failed: {}".format(e))
         return False
+
+
+def send_telegram_long(message: str, token: str, chat_id: str):
+    """Send a message, splitting into ≤4000-char chunks on section boundaries."""
+    MAX = 4000
+    if len(message) <= MAX:
+        send_telegram(message, token, chat_id)
+        return
+    lines   = message.split("\n")
+    chunk   = ""
+    part    = 1
+    for line in lines:
+        if len(chunk) + len(line) + 1 > MAX:
+            send_telegram(chunk.strip(), token, chat_id)
+            chunk = ""
+            part += 1
+        chunk += line + "\n"
+    if chunk.strip():
+        send_telegram(chunk.strip(), token, chat_id)
 
 
 def test_telegram(config: dict):
@@ -552,8 +576,9 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
             "<b>{}</b> ({}){}\n"
             "   {} @ {} | {}\n"
             "   Predicted: <b>{} Ks</b>{}"
-        ).format(p["pitcher"], role, hot, p["away_team"], p["home_team"],
-                 p["time"], p["pred_k_total"], opp)
+        ).format(_esc(p["pitcher"]), _esc(role), hot,
+                 _esc(p["away_team"]), _esc(p["home_team"]),
+                 _esc(p["time"]), p["pred_k_total"], opp)
         if acc:
             body += "\n" + acc
         return body
@@ -694,7 +719,7 @@ def main():
     message = build_message(games, predictions, config)
 
     if not args.no_send:
-        send_telegram(message, config["telegram_token"], config["chat_id"])
+        send_telegram_long(message, config["telegram_token"], config["chat_id"])
     else:
         print("(--no-send: Telegram skipped)")
         import re
