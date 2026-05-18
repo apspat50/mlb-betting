@@ -13,7 +13,20 @@
       "avg_ip": 5.7,
       "form_z": 1.09,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.8 L5=6.8 SwStr=16.4% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.8 L5=6.8 SwStr=16.4% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        8,
+        5,
+        7,
+        5,
+        9
+      ],
+      "over_line": 7.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "JR Ritchie",
@@ -27,7 +40,18 @@
       "avg_ip": 4.9,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.3 L5=4.2 SwStr=7.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.3 L5=4.2 SwStr=7.9% OppK=22.2%)",
+      "recent_ks": [
+        7,
+        4,
+        2,
+        4
+      ],
+      "over_line": 2.5,
+      "over_count": 3,
+      "n_starts_checked": 4,
+      "season_starts": 4,
+      "small_sample": true
     },
     {
       "pitcher": "Shane McClanahan",
@@ -41,7 +65,20 @@
       "avg_ip": 5.2,
       "form_z": 0.43,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=14.0% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=14.0% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        5,
+        7,
+        5,
+        4,
+        7
+      ],
+      "over_line": 5.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
     },
     {
       "pitcher": "Trevor Rogers",
@@ -55,7 +92,20 @@
       "avg_ip": 5.1,
       "form_z": -1.36,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=12.1% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=12.1% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        3,
+        6,
+        6,
+        5,
+        3
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 6,
+      "small_sample": false
     },
     {
       "pitcher": "Andrew Painter",
@@ -69,7 +119,20 @@
       "avg_ip": 4.7,
       "form_z": 0.04,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=12.4% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=12.4% OppK=22.2%)",
+      "recent_ks": [
+        7,
+        4,
+        1,
+        7,
+        2,
+        4
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
     },
     {
       "pitcher": "Nick Lodolo",
@@ -83,7 +146,16 @@
       "avg_ip": 5.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.6 L5=5.6 SwStr=10.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.6 L5=5.6 SwStr=10.5% OppK=22.2%)",
+      "recent_ks": [
+        2,
+        6
+      ],
+      "over_line": 5.5,
+      "over_count": 1,
+      "n_starts_checked": 2,
+      "season_starts": 2,
+      "small_sample": true
     },
     {
       "pitcher": "Framber Valdez",
@@ -97,7 +169,20 @@
       "avg_ip": 5.2,
       "form_z": 1.0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=12.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=12.3% OppK=22.2%)",
+      "recent_ks": [
+        1,
+        7,
+        4,
+        8,
+        3,
+        7
+      ],
+      "over_line": 4.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Slade Cecconi",
@@ -111,7 +196,20 @@
       "avg_ip": 5.1,
       "form_z": 0.3,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=7.6% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=7.6% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        2,
+        5,
+        3,
+        3,
+        7
+      ],
+      "over_line": 3.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Jake Irvin",
@@ -125,7 +223,20 @@
       "avg_ip": 4.7,
       "form_z": -1.02,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=8.4% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=8.4% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        4,
+        9,
+        5,
+        2,
+        4
+      ],
+      "over_line": 3.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Christian Scott",
@@ -139,7 +250,17 @@
       "avg_ip": 5.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=11.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=11.9% OppK=22.2%)",
+      "recent_ks": [
+        8,
+        6,
+        5
+      ],
+      "over_line": 6.5,
+      "over_count": 1,
+      "n_starts_checked": 3,
+      "season_starts": 3,
+      "small_sample": true
     },
     {
       "pitcher": "Ryan Weathers",
@@ -153,7 +274,20 @@
       "avg_ip": 6.0,
       "form_z": -0.19,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=7.3 L5=7.3 SwStr=12.6% OppK=22.2%)"
+      "data_source": "Statcast (L3=7.3 L5=7.3 SwStr=12.6% OppK=22.2%)",
+      "recent_ks": [
+        7,
+        10,
+        8,
+        4,
+        5,
+        9
+      ],
+      "over_line": 7.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
     },
     {
       "pitcher": "Patrick Corbin",
@@ -167,7 +301,20 @@
       "avg_ip": 4.9,
       "form_z": -1.2,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.7 L5=3.7 SwStr=3.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.7 L5=3.7 SwStr=3.9% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        3,
+        4,
+        4,
+        1,
+        1
+      ],
+      "over_line": 2.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 7,
+      "small_sample": false
     },
     {
       "pitcher": "Seth Lugo",
@@ -181,7 +328,20 @@
       "avg_ip": 5.7,
       "form_z": -0.71,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.1 L5=5.1 SwStr=5.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.1 L5=5.1 SwStr=5.3% OppK=22.2%)",
+      "recent_ks": [
+        7,
+        7,
+        3,
+        6,
+        5,
+        4
+      ],
+      "over_line": 3.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Sonny Gray",
@@ -195,7 +355,20 @@
       "avg_ip": 5.5,
       "form_z": 0.69,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.5 L5=5.5 SwStr=9.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.5 L5=5.5 SwStr=9.3% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        3,
+        2,
+        1,
+        2,
+        6
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 6,
+      "small_sample": false
     },
     {
       "pitcher": "Kendry Rojas",
@@ -209,7 +382,13 @@
       "avg_ip": 5.5,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "model fallback (no Statcast)"
+      "data_source": "model fallback (no Statcast)",
+      "recent_ks": [],
+      "over_line": null,
+      "over_count": null,
+      "n_starts_checked": 0,
+      "season_starts": 1,
+      "small_sample": false
     },
     {
       "pitcher": "Tatsuya Imai",
@@ -223,7 +402,17 @@
       "avg_ip": 4.3,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=12.2% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=12.2% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        9,
+        3
+      ],
+      "over_line": 5.5,
+      "over_count": 1,
+      "n_starts_checked": 3,
+      "season_starts": 3,
+      "small_sample": true
     },
     {
       "pitcher": "Shota Imanaga",
@@ -237,7 +426,20 @@
       "avg_ip": 6.5,
       "form_z": 0.26,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=16.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=16.9% OppK=22.2%)",
+      "recent_ks": [
+        11,
+        1,
+        6,
+        5,
+        10,
+        6
+      ],
+      "over_line": 6.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Brandon Sproat",
@@ -251,7 +453,20 @@
       "avg_ip": 5.1,
       "form_z": 1.0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.6 L5=4.6 SwStr=12.4% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.6 L5=4.6 SwStr=12.4% OppK=22.2%)",
+      "recent_ks": [
+        3,
+        6,
+        4,
+        5,
+        5,
+        6
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
     },
     {
       "pitcher": "Jose Quintana",
@@ -265,7 +480,20 @@
       "avg_ip": 5.2,
       "form_z": -1.16,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.2 L5=3.2 SwStr=11.1% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.2 L5=3.2 SwStr=11.1% OppK=22.2%)",
+      "recent_ks": [
+        1,
+        1,
+        5,
+        3,
+        2,
+        2
+      ],
+      "over_line": 2.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 7,
+      "small_sample": false
     },
     {
       "pitcher": "MacKenzie Gore",
@@ -279,7 +507,20 @@
       "avg_ip": 5.4,
       "form_z": -1.24,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=8.1% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.4 L5=5.4 SwStr=8.1% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        5,
+        7,
+        3,
+        3,
+        5
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Walbert Urena",
@@ -293,7 +534,19 @@
       "avg_ip": 5.1,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=10.3% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.8 L5=4.8 SwStr=10.3% OppK=22.2%)",
+      "recent_ks": [
+        8,
+        3,
+        4,
+        5,
+        4
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 5,
+      "season_starts": 5,
+      "small_sample": false
     },
     {
       "pitcher": "J.T. Ginn",
@@ -307,7 +560,20 @@
       "avg_ip": 5.4,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=7.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.3 L5=5.3 SwStr=7.9% OppK=22.2%)",
+      "recent_ks": [
+        3,
+        6,
+        2,
+        4,
+        8,
+        3
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
     },
     {
       "pitcher": "Bryan Woo",
@@ -321,7 +587,20 @@
       "avg_ip": 5.6,
       "form_z": 0.81,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=5.1 L5=5.1 SwStr=10.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=5.1 L5=5.1 SwStr=10.9% OppK=22.2%)",
+      "recent_ks": [
+        3,
+        6,
+        1,
+        2,
+        9,
+        9
+      ],
+      "over_line": 4.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Noah Schultz",
@@ -335,7 +614,20 @@
       "avg_ip": 5.0,
       "form_z": 0,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.3 L5=4.3 SwStr=8.7% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.3 L5=4.3 SwStr=8.7% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        6,
+        8,
+        2,
+        3,
+        3
+      ],
+      "over_line": 3.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 6,
+      "small_sample": false
     },
     {
       "pitcher": "Michael King",
@@ -349,7 +641,20 @@
       "avg_ip": 5.7,
       "form_z": 0.03,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.0 L5=6.0 SwStr=13.2% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.0 L5=6.0 SwStr=13.2% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        6,
+        8,
+        5,
+        6,
+        5
+      ],
+      "over_line": 6.5,
+      "over_count": 1,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Yoshinobu Yamamoto",
@@ -363,7 +668,20 @@
       "avg_ip": 6.4,
       "form_z": 0.43,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=6.8 L5=6.8 SwStr=12.6% OppK=22.2%)"
+      "data_source": "Statcast (L3=6.8 L5=6.8 SwStr=12.6% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        7,
+        7,
+        4,
+        8,
+        8
+      ],
+      "over_line": 7.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
     },
     {
       "pitcher": "Zac Gallen",
@@ -377,7 +695,20 @@
       "avg_ip": 4.6,
       "form_z": 1.02,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=3.4 L5=3.4 SwStr=8.9% OppK=22.2%)"
+      "data_source": "Statcast (L3=3.4 L5=3.4 SwStr=8.9% OppK=22.2%)",
+      "recent_ks": [
+        2,
+        3,
+        3,
+        3,
+        5,
+        4
+      ],
+      "over_line": 2.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     },
     {
       "pitcher": "Robbie Ray",
@@ -391,7 +722,20 @@
       "avg_ip": 5.6,
       "form_z": -0.88,
       "opp_kpct": 0.22,
-      "data_source": "Statcast (L3=4.9 L5=4.9 SwStr=10.5% OppK=22.2%)"
+      "data_source": "Statcast (L3=4.9 L5=4.9 SwStr=10.5% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        7,
+        4,
+        5,
+        7,
+        2
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 9,
+      "small_sample": false
     }
   ],
   "batters": [
