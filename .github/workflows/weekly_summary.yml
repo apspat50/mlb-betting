@@ -32,7 +32,7 @@ jobs:
           echo '{"telegram_token":"${{ secrets.TELEGRAM_TOKEN }}","chat_id":"${{ secrets.TELEGRAM_CHAT_ID }}","bankroll":1000,"min_edge":0.06}' > config.json
 
       - name: Pull latest predictions for the week
-        run: git pull --rebase origin main || true
+        run: git pull origin main || true
 
       - name: Run weekly summary and send to Telegram
         run: python weekly_summary.py
