@@ -18,7 +18,7 @@ import requests
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 PREDICTIONS_DIR = Path("predictions")
 PREDICTIONS_DIR.mkdir(exist_ok=True)
@@ -26,6 +26,43 @@ PREDICTIONS_DIR.mkdir(exist_ok=True)
 warnings.filterwarnings("ignore")
 
 CONFIG_FILE = Path("config.json")
+
+
+def load_batter_accuracy(days: int = 60) -> dict:
+    """
+    Read saved batter_results from recent predictions/*.json files.
+    Returns {batter_name: {"h_games": int, "hr_games": int, "n": int}}
+    where h_games = games with actual_h >= 1, hr_games = games with actual_hr >= 1.
+    """
+    today = datetime.now()
+    data  = {}
+    for i in range(1, days + 1):
+        fp = PREDICTIONS_DIR / (today - timedelta(days=i)).strftime("%Y-%m-%d.json")
+        if not fp.exists():
+            continue
+        try:
+            saved = json.load(open(fp))
+        except Exception:
+            continue
+        for r in saved.get("batter_results", []):
+            name     = r.get("batter", "")
+            actual_h = r.get("actual_h")
+            actual_hr = r.get("actual_hr")
+            if not name or actual_h is None:
+                continue
+            if name not in data:
+                data[name] = {"h_games": 0, "hr_games": 0, "n": 0}
+            data[name]["n"] += 1
+            if actual_h >= 1:
+                data[name]["h_games"] += 1
+            if (actual_hr or 0) >= 1:
+                data[name]["hr_games"] += 1
+    return data
+
+
+def _esc(text) -> str:
+    """Escape HTML special chars in plain-text fields."""
+    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def load_config() -> dict:
@@ -57,6 +94,23 @@ def send_telegram(message: str, token: str, chat_id: str) -> bool:
     except Exception as e:
         print(f"  ⚠️  Telegram failed: {e}")
         return False
+
+
+def send_telegram_long(message: str, token: str, chat_id: str):
+    """Send a message, splitting into ≤4000-char chunks on line boundaries."""
+    MAX = 4000
+    if len(message) <= MAX:
+        send_telegram(message, token, chat_id)
+        return
+    lines = message.split("\n")
+    chunk = ""
+    for line in lines:
+        if len(chunk) + len(line) + 1 > MAX:
+            send_telegram(chunk.strip(), token, chat_id)
+            chunk = ""
+        chunk += line + "\n"
+    if chunk.strip():
+        send_telegram(chunk.strip(), token, chat_id)
 
 
 def fetch_todays_games() -> pd.DataFrame:
@@ -233,6 +287,24 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
         lines.append(f"⏰ {datetime.now().strftime('%I:%M %p ET')}")
         return "\n".join(lines)
 
+    accuracy = load_batter_accuracy()
+
+    def _h_acc(name: str) -> str:
+        d = accuracy.get(name, {})
+        n = d.get("n", 0)
+        if n < 5:
+            return ""
+        h = d.get("h_games", 0)
+        return "   Got a hit in {} of last {} games ({:.0f}%)".format(h, n, h / n * 100)
+
+    def _hr_acc(name: str) -> str:
+        d = accuracy.get(name, {})
+        n = d.get("n", 0)
+        if n < 5:
+            return ""
+        hr = d.get("hr_games", 0)
+        return "   Hit HR in {} of last {} games ({:.0f}%)".format(hr, n, hr / n * 100)
+
     # ── HIT BETS: H >= 1.2 (bet over 0.5 hits line) ──
     hit_bets = sorted(
         [p for p in predictions if (p.get("pred_h") or 0) >= 1.2],
@@ -242,11 +314,13 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
     if hit_bets:
         lines.append("🎯 <b>HIT BETS</b> — pred ≥1.2 H <i>(bet over 0.5 hits line)</i>")
         for p in hit_bets[:8]:
-            hot = " 🔥" if p.get("hot") else ""
-            lines.append(
-                f"✅ <b>{p['batter']}</b>{hot} — <b>{p['pred_h']} H</b> · TB {p['pred_tb']}"
-                f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}\n"
-            )
+            hot  = " 🔥" if p.get("hot") else ""
+            acc  = _h_acc(p["batter"])
+            matchup = f"   {_esc(p['away_team'])} @ {_esc(p['home_team'])} | {_esc(p['time'])}"
+            entry = f"✅ <b>{_esc(p['batter'])}</b>{hot} — <b>{p['pred_h']} H</b> · TB {p['pred_tb']}\n{matchup}"
+            if acc:
+                entry += "\n" + acc
+            lines.append(entry + "\n")
 
     # ── HR PICKS: sorted by HR%, show barrel% as quality filter ──
     hr_picks = sorted(
@@ -269,17 +343,19 @@ def build_message(predictions: list, games: pd.DataFrame) -> str:
                 icon, label = "⚠️", "RISKY (lucky HRs)"
             else:
                 icon, label = "📊", "MODERATE"
-            lines.append(
-                f"{icon} <b>{p['batter']}</b> — <b>{pct}%</b>{barrel_str} · {label}"
-                f"\n   {p['away_team']} @ {p['home_team']} | {p['time']}\n"
-            )
+            acc     = _hr_acc(p["batter"])
+            matchup = f"   {_esc(p['away_team'])} @ {_esc(p['home_team'])} | {_esc(p['time'])}"
+            entry   = f"{icon} <b>{_esc(p['batter'])}</b> — <b>{pct}%</b>{barrel_str} · {label}\n{matchup}"
+            if acc:
+                entry += "\n" + acc
+            lines.append(entry + "\n")
 
     # ── SKIP / COLD: slumping batters to avoid ──
     cold = [p for p in predictions if p.get("slump") and (p.get("pred_h") or 0) < 0.8]
     if cold:
         lines.append("🥶 <b>AVOID / COLD STREAKS</b>")
         for p in cold[:4]:
-            lines.append(f"   ❌ {p['batter']} — pred {p['pred_h']} H (slumping)")
+            lines.append(f"   ❌ {_esc(p['batter'])} — pred {p['pred_h']} H (slumping)")
 
     lines.append(f"\n⏰ {datetime.now().strftime('%I:%M %p ET')}")
     return "\n".join(lines)
@@ -432,7 +508,7 @@ def main():
     message = build_message(predictions, games)
 
     if not args.no_send:
-        send_telegram(message, config["telegram_token"], config["chat_id"])
+        send_telegram_long(message, config["telegram_token"], config["chat_id"])
     else:
         print("(--no-send: Telegram skipped)")
 
