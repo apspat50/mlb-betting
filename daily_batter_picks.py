@@ -324,10 +324,49 @@ def git_push_predictions(filepath: Path):
         print("  Git push failed: {}".format(e))
 
 
+def run_batter_predictions_for_names(batter_names: list) -> list:
+    """Run predictions for an explicit list of batter names (bypasses schedule/lineup fetch)."""
+    from statcast_batters import fetch_todays_batter_games, predict_batter_props
+
+    today    = datetime.now()
+
+    print(f"  Fetching recent Statcast data for {len(batter_names)} batters...")
+    game_logs = fetch_todays_batter_games(batter_names, days_back=30)
+
+    if game_logs.empty:
+        print("  ⚠️  No batter game logs found")
+        return []
+
+    predictions = []
+    for batter in batter_names:
+        preds = predict_batter_props(batter, today, game_logs)
+        if not preds or preds.get("n_games", 0) < 5:
+            continue
+        predictions.append({
+            "batter":    batter,
+            "team":      "",
+            "home_team": "",
+            "away_team": "",
+            "time":      "",
+            "pred_h":    preds.get("pred_h"),
+            "pred_tb":   preds.get("pred_tb"),
+            "pred_hr":   preds.get("pred_hr"),
+            "hr_pct":    preds.get("hr_pct"),
+            "form_z":    preds.get("form_z", 0),
+            "hot":       preds.get("hot", 0),
+            "slump":     preds.get("slump", 0),
+            "exit_velo": preds.get("exit_velo"),
+            "barrel":    preds.get("barrel"),
+            "n_games":   preds.get("n_games", 0),
+        })
+    return predictions
+
+
 def main():
     parser = argparse.ArgumentParser(description="Daily Batter Props")
     parser.add_argument("--no-send", action="store_true")
     parser.add_argument("--test",    action="store_true")
+    parser.add_argument("--batters", default=None, help="Comma-separated list of batter names (bypasses schedule/lineup fetch)")
     args   = parser.parse_args()
     config = load_config()
 
@@ -340,15 +379,21 @@ def main():
 
     print(f"\n🏏  Daily Batter Props — {datetime.now().strftime('%B %d, %Y')}\n")
 
-    print("  Fetching today's games...")
-    games = fetch_todays_games()
-    if games.empty:
-        print("  No games today.")
-        return
-    print(f"  ✅ {len(games)} games found")
+    if args.batters:
+        batter_names = [b.strip() for b in args.batters.split(",")]
+        print(f"  Using manual batter list: {batter_names}")
+        predictions = run_batter_predictions_for_names(batter_names)
+        games = pd.DataFrame()
+    else:
+        print("  Fetching today's games...")
+        games = fetch_todays_games()
+        if games.empty:
+            print("  No games today.")
+            return
+        print(f"  ✅ {len(games)} games found")
 
-    print("\n  Running batter predictions...")
-    predictions = run_batter_predictions(games)
+        print("\n  Running batter predictions...")
+        predictions = run_batter_predictions(games)
     print(f"  ✅ {len(predictions)} batter predictions")
 
     # Print summary — sorted by TB
