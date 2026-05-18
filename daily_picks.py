@@ -156,96 +156,6 @@ def fetch_todays_games(date_str=None) -> pd.DataFrame:
 
 
 # ======================================================
-# INJURY STATUS (MLB Transactions API)
-# ======================================================
-
-def fetch_injury_flags(pitcher_names: list) -> dict:
-    """
-    Check MLB transactions from the last 30 days for IL placements and
-    activations. Returns dict: pitcher_name -> {status, detail}
-
-    status values:
-      'on_il'              — placed on IL, not yet activated
-      'recently_activated' — activated from IL within last 21 days
-    """
-    from datetime import timedelta
-    today     = datetime.now()
-    lookback  = (today - timedelta(days=30)).strftime("%Y-%m-%d")
-    today_str = today.strftime("%Y-%m-%d")
-
-    try:
-        r = requests.get(
-            "https://statsapi.mlb.com/api/v1/transactions",
-            params={"startDate": lookback, "endDate": today_str, "sportId": 1},
-            timeout=10,
-        )
-        r.raise_for_status()
-        transactions = r.json().get("transactions", [])
-    except Exception:
-        return {}
-
-    # Build a per-person event timeline
-    from collections import defaultdict
-    person_events = defaultdict(list)
-    for txn in transactions:
-        full_name = txn.get("person", {}).get("fullName", "")
-        if not full_name:
-            continue
-        txn_type = txn.get("typeDesc", "")
-        txn_date = txn.get("date", "")[:10]
-        person_events[full_name].append({"type": txn_type, "date": txn_date})
-
-    flags = {}
-    for pitcher in pitcher_names:
-        p_last = pitcher.split()[-1].lower()
-
-        # Find matching player in transactions (last-name match)
-        matched_events = []
-        for full_name, events in person_events.items():
-            if p_last in full_name.lower():
-                matched_events = events
-                break
-
-        if not matched_events:
-            continue
-
-        # Sort by date and determine current status
-        matched_events.sort(key=lambda x: x["date"])
-        last_il   = None
-        last_act  = None
-        for ev in matched_events:
-            t = ev["type"]
-            if "Placement" in t and "IL" in t:
-                last_il  = ev["date"]
-                last_act = None   # reset — placement after activation
-            elif "Activation" in t:
-                last_act = ev["date"]
-                last_il  = None   # activated means off IL
-
-        if last_il:
-            try:
-                days_ago = (today - datetime.strptime(last_il, "%Y-%m-%d")).days
-            except Exception:
-                days_ago = "?"
-            flags[pitcher] = {
-                "status": "on_il",
-                "detail": "⚠️ On IL (placed {} days ago)".format(days_ago),
-            }
-        elif last_act:
-            try:
-                days_ago = (today - datetime.strptime(last_act, "%Y-%m-%d")).days
-            except Exception:
-                days_ago = "?"
-            if isinstance(days_ago, int) and days_ago <= 21:
-                flags[pitcher] = {
-                    "status": "recently_activated",
-                    "detail": "🏥 Returning from IL ({} days ago)".format(days_ago),
-                }
-
-    return flags
-
-
-# ======================================================
 # PITCHER K PREDICTIONS -- STATCAST FIRST
 # ======================================================
 
@@ -325,18 +235,6 @@ def run_k_predictions(games: pd.DataFrame) -> list:
     mlb_season_stats = fetch_mlb_season_stats_for_pitchers(
         todays_pitchers, seasons=[cur_year, cur_year - 1]
     )
-
-    # Fetch injury flags for all of today's pitchers
-    todays_pitcher_names = []
-    for _, g in games.iterrows():
-        for sp in [g.get("home_sp",""), g.get("away_sp","")]:
-            if sp and sp != "TBD":
-                todays_pitcher_names.append(sp)
-    print("  Checking injury/IL status...")
-    injury_flags = fetch_injury_flags(todays_pitcher_names)
-    if injury_flags:
-        for name, flag in injury_flags.items():
-            print("    {} — {}".format(name, flag["detail"]))
 
     predictions = []
     today = datetime.now()
@@ -542,7 +440,6 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                         over_line  = max(0.5, over_line)
                         over_count = sum(1 for k in recent_ks if k > over_line)
 
-                inj = injury_flags.get(pitcher, {})
                 predictions.append({
                     "pitcher":           pitcher,
                     "role":              role,
@@ -562,8 +459,6 @@ def run_k_predictions(games: pd.DataFrame) -> list:
                     "n_starts_checked":  n_starts_checked,
                     "season_starts":     season_starts,
                     "small_sample":      small_sample,
-                    "injury_status":     inj.get("status", ""),
-                    "injury_detail":     inj.get("detail", ""),
                 })
 
             except Exception as e:
@@ -596,20 +491,15 @@ def build_message(games: pd.DataFrame, predictions: list, config: dict) -> str:
     middle = [p for p in preds if 3.5 < p["pred_k_total"] < 6.5]
 
     def _k_history(p: dict) -> str:
-        """K history line with sample-size awareness and injury flag."""
-        inj_detail = p.get("injury_detail", "")
-        n          = p.get("n_starts_checked", 0)
-        ks         = p.get("recent_ks", [])
-        line       = p.get("over_line")
-        cnt        = p.get("over_count")
-        small      = p.get("small_sample", False)
-        season_n   = p.get("season_starts", 0)
+        """K history line with sample-size awareness."""
+        n        = p.get("n_starts_checked", 0)
+        ks       = p.get("recent_ks", [])
+        line     = p.get("over_line")
+        cnt      = p.get("over_count")
+        small    = p.get("small_sample", False)
+        season_n = p.get("season_starts", 0)
 
         parts = []
-
-        # Injury flag goes first
-        if inj_detail:
-            parts.append("   {}".format(inj_detail))
 
         # K history
         if n < 2:
@@ -801,4 +691,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("Fatal error: {}".format(e))
+        import traceback; traceback.print_exc()
