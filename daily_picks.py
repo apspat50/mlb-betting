@@ -728,9 +728,10 @@ def git_push_predictions(filepath: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="Daily MLB Props Picks")
-    parser.add_argument("--test",    action="store_true", help="Test Telegram connection")
-    parser.add_argument("--no-send", action="store_true", help="Print picks, skip Telegram")
-    parser.add_argument("--date",    default=None,        help="Date YYYY-MM-DD, default today")
+    parser.add_argument("--test",     action="store_true", help="Test Telegram connection")
+    parser.add_argument("--no-send",  action="store_true", help="Print picks, skip Telegram")
+    parser.add_argument("--date",     default=None,        help="Date YYYY-MM-DD, default today")
+    parser.add_argument("--pitchers", default=None,        help="Comma-separated list of pitchers to run (bypasses schedule fetch)")
     args   = parser.parse_args()
     config = load_config()
 
