@@ -5,9 +5,6 @@ on:
     - cron: '30 3 * * *'  # 11:30 PM EDT (03:30 UTC next day)
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   check-results:
     runs-on: ubuntu-latest
@@ -15,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Get today's date
+      - name: Get yesterday's date
         id: date
         run: echo "date=$(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
@@ -40,22 +35,10 @@ jobs:
         run: |
           echo '{"telegram_token":"${{ secrets.TELEGRAM_TOKEN }}","chat_id":"${{ secrets.TELEGRAM_CHAT_ID }}","bankroll":1000,"min_edge":0.06}' > config.json
 
-      - name: Pull latest predictions (committed by noon workflows)
-        run: git pull --rebase origin main || true
+      - name: Pull latest predictions
+        run: git pull origin main || true
 
       - name: Run results check and send to Telegram
         run: python daily_results.py --date ${{ steps.date.outputs.date }}
         env:
           PYTHONUNBUFFERED: "1"
-
-      - name: Commit results back to repo
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add predictions/
-          git diff --staged --quiet || git commit -m "results: ${{ steps.date.outputs.date }}"
-          for i in 1 2 3 4; do
-            git pull --no-rebase origin main && git push origin HEAD && break
-            echo "Push attempt $i failed, retrying in ${i}s..."
-            sleep $i
-          done
