@@ -78,7 +78,10 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main || true
           git add predictions/
           git diff --staged --quiet || git commit -m "predictions: ${{ steps.date.outputs.date }} (pitchers)"
-          git push origin HEAD
+          for i in 1 2 3 4; do
+            git pull --rebase origin main && git push origin HEAD && break
+            echo "Push attempt $i failed, retrying in ${i}s..."
+            sleep $i
+          done
