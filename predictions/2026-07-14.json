@@ -1,0 +1,59 @@
+{
+  "date": "2026-07-14",
+  "pitchers": [
+    {
+      "pitcher": "Cristopher Sanchez",
+      "role": "Home",
+      "home_team": "National All-Stars",
+      "away_team": "American All-Stars",
+      "time": "8:00 PM ET",
+      "opp_team": "American All-Stars",
+      "pred_k9": 9.0,
+      "pred_k_total": 5.7,
+      "avg_ip": 5.7,
+      "form_z": -0.58,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.8 L5=5.8 SwStr=17.4% OppK=22.2%)",
+      "recent_ks": [
+        3,
+        5,
+        6,
+        9,
+        1,
+        7
+      ],
+      "over_line": 5.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 20,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Dylan Cease",
+      "role": "Away",
+      "home_team": "National All-Stars",
+      "away_team": "American All-Stars",
+      "time": "8:00 PM ET",
+      "opp_team": "National All-Stars",
+      "pred_k9": 12.0,
+      "pred_k_total": 8.6,
+      "avg_ip": 6.4,
+      "form_z": 0.92,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=8.7 L5=8.7 SwStr=12.8% OppK=22.2%)",
+      "recent_ks": [
+        11,
+        7,
+        8,
+        10,
+        9,
+        11
+      ],
+      "over_line": 8.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 17,
+      "small_sample": false
+    }
+  ]
+}
