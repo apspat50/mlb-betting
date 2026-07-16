@@ -1,0 +1,59 @@
+{
+  "date": "2026-07-16",
+  "pitchers": [
+    {
+      "pitcher": "Aaron Nola",
+      "role": "Home",
+      "home_team": "Philadelphia Phillies",
+      "away_team": "New York Mets",
+      "time": "7:00 PM ET",
+      "opp_team": "New York Mets",
+      "pred_k9": 9.7,
+      "pred_k_total": 5.7,
+      "avg_ip": 5.3,
+      "form_z": 0.97,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.1 L5=6.1 SwStr=18.6% OppK=22.2%)",
+      "recent_ks": [
+        3,
+        6,
+        5,
+        5,
+        7,
+        8
+      ],
+      "over_line": 5.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 19,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Christian Scott",
+      "role": "Away",
+      "home_team": "Philadelphia Phillies",
+      "away_team": "New York Mets",
+      "time": "7:00 PM ET",
+      "opp_team": "Philadelphia Phillies",
+      "pred_k9": 10.9,
+      "pred_k_total": 5.7,
+      "avg_ip": 4.7,
+      "form_z": 0.33,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.6 L5=5.6 SwStr=15.5% OppK=22.2%)",
+      "recent_ks": [
+        8,
+        3,
+        6,
+        6,
+        7,
+        5
+      ],
+      "over_line": 5.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 11,
+      "small_sample": false
+    }
+  ]
+}
