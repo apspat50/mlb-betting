@@ -369,5 +369,176 @@
       "season_starts": 4,
       "small_sample": true
     }
-  ]
+  ],
+  "pitcher_results": [
+    {
+      "pitcher": "Jake Irvin",
+      "home_team": "Washington Nationals",
+      "away_team": "Colorado Rockies",
+      "pred_k": 5.2,
+      "actual_k": 6,
+      "diff": 0.8,
+      "pct_err": 15.4,
+      "hit": true,
+      "ip": "4.1",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Gabriel Hughes",
+      "home_team": "Washington Nationals",
+      "away_team": "Colorado Rockies",
+      "pred_k": 3.8,
+      "actual_k": 3,
+      "diff": -0.8,
+      "pct_err": 21.1,
+      "hit": true,
+      "ip": "5.0",
+      "game_note": "(L, 0-6)"
+    },
+    {
+      "pitcher": "Gordon Graceffo",
+      "home_team": "St. Louis Cardinals",
+      "away_team": "Baltimore Orioles",
+      "pred_k": 1.8,
+      "actual_k": 4,
+      "diff": 2.2,
+      "pct_err": 122.2,
+      "hit": false,
+      "ip": "3.0",
+      "game_note": ""
+    },
+    {
+      "pitcher": "Trevor Rogers",
+      "home_team": "St. Louis Cardinals",
+      "away_team": "Baltimore Orioles",
+      "pred_k": 5.4,
+      "actual_k": 7,
+      "diff": 1.6,
+      "pct_err": 29.6,
+      "hit": false,
+      "ip": "5.0",
+      "game_note": "(L, 9-9)"
+    },
+    {
+      "pitcher": "Gerrit Cole",
+      "home_team": "New York Yankees",
+      "away_team": "Houston Astros",
+      "pred_k": 6.1,
+      "actual_k": 5,
+      "diff": -1.1,
+      "pct_err": 18.0,
+      "hit": true,
+      "ip": "6.0",
+      "game_note": "(L, 7-7)"
+    },
+    {
+      "pitcher": "Hayden Wesneski",
+      "home_team": "New York Yankees",
+      "away_team": "Houston Astros",
+      "pred_k": 5.3,
+      "actual_k": 6,
+      "diff": 0.7,
+      "pct_err": 13.2,
+      "hit": true,
+      "ip": "5.0",
+      "game_note": "(W, 4-1)"
+    },
+    {
+      "pitcher": "Spencer Arrighetti",
+      "home_team": "Toronto Blue Jays",
+      "away_team": "Kansas City Royals",
+      "pred_k": 4.9,
+      "actual_k": 4,
+      "diff": -0.9,
+      "pct_err": 18.4,
+      "hit": true,
+      "ip": "4.0",
+      "game_note": "(L, 7-7)"
+    },
+    {
+      "pitcher": "Noah Cameron",
+      "home_team": "Toronto Blue Jays",
+      "away_team": "Kansas City Royals",
+      "pred_k": 5.3,
+      "actual_k": 3,
+      "diff": -2.3,
+      "pct_err": 43.4,
+      "hit": false,
+      "ip": "6.0",
+      "game_note": "(W, 9-8)"
+    },
+    {
+      "pitcher": "Sean Manaea",
+      "home_team": "New York Mets",
+      "away_team": "Milwaukee Brewers",
+      "pred_k": 6.2,
+      "actual_k": 3,
+      "diff": -3.2,
+      "pct_err": 51.6,
+      "hit": false,
+      "ip": "5.2",
+      "game_note": "(L, 4-6)"
+    },
+    {
+      "pitcher": "Jacob Misiorowski",
+      "home_team": "New York Mets",
+      "away_team": "Milwaukee Brewers",
+      "pred_k": 9.0,
+      "actual_k": 6,
+      "diff": -3.0,
+      "pct_err": 33.3,
+      "hit": false,
+      "ip": "6.0",
+      "game_note": "(W, 14-5)"
+    },
+    {
+      "pitcher": "Chris Sale",
+      "home_team": "Atlanta Braves",
+      "away_team": "Los Angeles Dodgers",
+      "pred_k": 7.7,
+      "actual_k": 11,
+      "diff": 3.3,
+      "pct_err": 42.9,
+      "hit": false,
+      "ip": "9.0",
+      "game_note": "(W, 13-9)"
+    },
+    {
+      "pitcher": "Yoshinobu Yamamoto",
+      "home_team": "Atlanta Braves",
+      "away_team": "Los Angeles Dodgers",
+      "pred_k": 5.6,
+      "actual_k": 8,
+      "diff": 2.4,
+      "pct_err": 42.9,
+      "hit": false,
+      "ip": "6.1",
+      "game_note": "(L, 12-8)"
+    },
+    {
+      "pitcher": "Landen Roupp",
+      "home_team": "San Francisco Giants",
+      "away_team": "Arizona Diamondbacks",
+      "pred_k": 4.5,
+      "actual_k": 3,
+      "diff": -1.5,
+      "pct_err": 33.3,
+      "hit": true,
+      "ip": "5.0",
+      "game_note": "(W, 8-13)"
+    },
+    {
+      "pitcher": "Jose Cabrera",
+      "home_team": "San Francisco Giants",
+      "away_team": "Arizona Diamondbacks",
+      "pred_k": 1.6,
+      "actual_k": 4,
+      "diff": 2.4,
+      "pct_err": 150.0,
+      "hit": false,
+      "ip": "4.1",
+      "game_note": "(L, 0-3)"
+    }
+  ],
+  "results_fetched_at": "2026-08-28T15:34:02.126597"
 }
