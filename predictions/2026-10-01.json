@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-01",
+  "pitchers": [
+    {
+      "pitcher": "Aaron Nola",
+      "role": "Away",
+      "home_team": "Atlanta Braves",
+      "away_team": "Philadelphia Phillies",
+      "time": "8:00 PM ET",
+      "opp_team": "Atlanta Braves",
+      "pred_k9": 7.3,
+      "pred_k_total": 5.1,
+      "avg_ip": 6.3,
+      "form_z": -0.83,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.7 L5=5.7 SwStr=11.1% OppK=22.2%)",
+      "recent_ks": [
+        7,
+        4,
+        5,
+        3,
+        4,
+        8
+      ],
+      "over_line": 4.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    }
+  ]
+}
