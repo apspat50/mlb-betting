@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-04",
+  "pitchers": [
+    {
+      "pitcher": "Logan Henderson",
+      "role": "Home",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "San Diego Padres",
+      "time": "4:00 PM ET",
+      "opp_team": "San Diego Padres",
+      "pred_k9": 8.8,
+      "pred_k_total": 5.7,
+      "avg_ip": 5.8,
+      "form_z": -0.41,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=11.8% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        7,
+        6,
+        8,
+        3
+      ],
+      "over_line": 5.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 17,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Michael King",
+      "role": "Away",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "San Diego Padres",
+      "time": "4:00 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 8.2,
+      "pred_k_total": 5.3,
+      "avg_ip": 5.8,
+      "form_z": 1.01,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.0 L5=5.0 SwStr=11.6% OppK=22.2%)",
+      "recent_ks": [
+        7,
+        6,
+        3,
+        4,
+        6,
+        5
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Blake Snell",
+      "role": "Home",
+      "home_team": "Los Angeles Dodgers",
+      "away_team": "Atlanta Braves",
+      "time": "8:00 PM ET",
+      "opp_team": "Atlanta Braves",
+      "pred_k9": 11.2,
+      "pred_k_total": 6.6,
+      "avg_ip": 5.3,
+      "form_z": 0.44,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.8 L5=6.8 SwStr=14.5% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        6,
+        10,
+        7,
+        8,
+        3
+      ],
+      "over_line": 6.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
+    }
+  ]
+}
