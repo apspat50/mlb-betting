@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-05",
+  "pitchers": [
+    {
+      "pitcher": "Gavin Williams",
+      "role": "Home",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Chicago White Sox",
+      "time": "5:00 PM ET",
+      "opp_team": "Chicago White Sox",
+      "pred_k9": 12.0,
+      "pred_k_total": 8.4,
+      "avg_ip": 6.3,
+      "form_z": -0.42,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=8.4 L5=8.4 SwStr=17.2% OppK=22.2%)",
+      "recent_ks": [
+        11,
+        13,
+        11,
+        7,
+        9,
+        4
+      ],
+      "over_line": 7.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 31,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Anthony Kay",
+      "role": "Away",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Chicago White Sox",
+      "time": "5:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 9.0,
+      "pred_k_total": 4.3,
+      "avg_ip": 4.3,
+      "form_z": -0.26,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=3.2 L5=3.2 SwStr=14.5% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        3,
+        2,
+        3,
+        4,
+        4
+      ],
+      "over_line": 3.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 33,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Freddy Peralta",
+      "role": "Home",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "New York Yankees",
+      "time": "8:00 PM ET",
+      "opp_team": "New York Yankees",
+      "pred_k9": 7.6,
+      "pred_k_total": 4.7,
+      "avg_ip": 5.6,
+      "form_z": 0.16,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=10.1% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        2,
+        4,
+        6,
+        4
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Cam Schlittler",
+      "role": "Away",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "New York Yankees",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 11.7,
+      "pred_k_total": 7.8,
+      "avg_ip": 6.0,
+      "form_z": -0.5,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=7.9 L5=7.9 SwStr=17.8% OppK=22.2%)",
+      "recent_ks": [
+        8,
+        9,
+        10,
+        8,
+        6,
+        5
+      ],
+      "over_line": 7.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 33,
+      "small_sample": false
+    }
+  ]
+}
