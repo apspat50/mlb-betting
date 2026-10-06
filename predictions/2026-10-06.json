@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-06",
+  "pitchers": [
+    {
+      "pitcher": "Chris Sale",
+      "role": "Home",
+      "home_team": "Atlanta Braves",
+      "away_team": "Los Angeles Dodgers",
+      "time": "6:00 PM ET",
+      "opp_team": "Los Angeles Dodgers",
+      "pred_k9": 10.7,
+      "pred_k_total": 8.0,
+      "avg_ip": 6.7,
+      "form_z": 0.07,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=8.1 L5=8.1 SwStr=18.8% OppK=22.2%)",
+      "recent_ks": [
+        9,
+        6,
+        11,
+        7,
+        6,
+        10
+      ],
+      "over_line": 7.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 27,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Yoshinobu Yamamoto",
+      "role": "Away",
+      "home_team": "Atlanta Braves",
+      "away_team": "Los Angeles Dodgers",
+      "time": "6:00 PM ET",
+      "opp_team": "Atlanta Braves",
+      "pred_k9": 9.4,
+      "pred_k_total": 7.0,
+      "avg_ip": 6.7,
+      "form_z": -0.82,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=7.2 L5=7.2 SwStr=17.1% OppK=22.2%)",
+      "recent_ks": [
+        9,
+        8,
+        8,
+        10,
+        7,
+        4
+      ],
+      "over_line": 6.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 28,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Nick Pivetta",
+      "role": "Home",
+      "home_team": "San Diego Padres",
+      "away_team": "Milwaukee Brewers",
+      "time": "9:30 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 10.9,
+      "pred_k_total": 5.2,
+      "avg_ip": 4.3,
+      "form_z": 1.4,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=8.9% OppK=22.2%)",
+      "recent_ks": [
+        8,
+        4,
+        2,
+        5,
+        4,
+        7
+      ],
+      "over_line": 4.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 8,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Dustin May",
+      "role": "Away",
+      "home_team": "San Diego Padres",
+      "away_team": "Milwaukee Brewers",
+      "time": "9:30 PM ET",
+      "opp_team": "San Diego Padres",
+      "pred_k9": 10.6,
+      "pred_k_total": 4.6,
+      "avg_ip": 3.9,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.2 L5=4.2 SwStr=12.4% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        4,
+        5,
+        6,
+        4,
+        5
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 26,
+      "small_sample": false
+    }
+  ]
+}
