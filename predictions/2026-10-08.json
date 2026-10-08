@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-08",
+  "pitchers": [
+    {
+      "pitcher": "Hagen Smith",
+      "role": "Home",
+      "home_team": "Chicago White Sox",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 2.6,
+      "pred_k_total": 1.6,
+      "avg_ip": 5.5,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "model fallback (no Statcast)",
+      "recent_ks": [],
+      "over_line": null,
+      "over_count": null,
+      "n_starts_checked": 0,
+      "season_starts": 1,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Parker Messick",
+      "role": "Away",
+      "home_team": "Chicago White Sox",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Chicago White Sox",
+      "pred_k9": 9.0,
+      "pred_k_total": 5.1,
+      "avg_ip": 5.1,
+      "form_z": -0.95,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.8 L5=5.8 SwStr=10.5% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        12,
+        5,
+        8,
+        5,
+        2
+      ],
+      "over_line": 4.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    }
+  ]
+}
