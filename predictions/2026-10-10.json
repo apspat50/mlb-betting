@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-10",
+  "pitchers": [
+    {
+      "pitcher": "Gavin Williams",
+      "role": "Home",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Chicago White Sox",
+      "time": "8:00 PM ET",
+      "opp_team": "Chicago White Sox",
+      "pred_k9": 12.0,
+      "pred_k_total": 8.5,
+      "avg_ip": 6.4,
+      "form_z": -0.08,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=8.4 L5=8.4 SwStr=18.5% OppK=22.2%)",
+      "recent_ks": [
+        11,
+        13,
+        11,
+        7,
+        9,
+        4
+      ],
+      "over_line": 8.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 31,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Sean Burke",
+      "role": "Away",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Chicago White Sox",
+      "time": "8:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 8.8,
+      "pred_k_total": 4.9,
+      "avg_ip": 5.0,
+      "form_z": 1.22,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.0 L5=5.0 SwStr=15.3% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        3,
+        6,
+        4,
+        5,
+        7
+      ],
+      "over_line": 4.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 31,
+      "small_sample": false
+    }
+  ]
+}
