@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-12",
+  "pitchers": [
+    {
+      "pitcher": "Logan Henderson",
+      "role": "Home",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Los Angeles Dodgers",
+      "time": "5:00 PM ET",
+      "opp_team": "Los Angeles Dodgers",
+      "pred_k9": 9.0,
+      "pred_k_total": 5.8,
+      "avg_ip": 5.8,
+      "form_z": -0.82,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=11.1% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        7,
+        6,
+        8,
+        3
+      ],
+      "over_line": 5.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 17,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Yoshinobu Yamamoto",
+      "role": "Away",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Los Angeles Dodgers",
+      "time": "5:00 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 9.5,
+      "pred_k_total": 7.1,
+      "avg_ip": 6.7,
+      "form_z": -2.15,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=7.2 L5=7.2 SwStr=15.5% OppK=22.2%)",
+      "recent_ks": [
+        9,
+        8,
+        8,
+        10,
+        7,
+        4
+      ],
+      "over_line": 6.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 28,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Drew Rasmussen",
+      "role": "Home",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 8.3,
+      "pred_k_total": 5.8,
+      "avg_ip": 6.3,
+      "form_z": 2.28,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.1 L5=6.1 SwStr=15.9% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        6,
+        7,
+        4,
+        3,
+        11
+      ],
+      "over_line": 5.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 29,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Foster Griffin",
+      "role": "Away",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 8.8,
+      "pred_k_total": 5.1,
+      "avg_ip": 5.2,
+      "form_z": 1.95,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=12.3% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        4,
+        4,
+        3,
+        5,
+        7
+      ],
+      "over_line": 4.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 30,
+      "small_sample": false
+    }
+  ]
+}
