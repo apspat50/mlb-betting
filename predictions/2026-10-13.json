@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-13",
+  "pitchers": [
+    {
+      "pitcher": "Freddy Peralta",
+      "role": "Home",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 8.5,
+      "pred_k_total": 5.3,
+      "avg_ip": 5.6,
+      "form_z": 0.08,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=12.5% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        2,
+        4,
+        6,
+        4
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Parker Messick",
+      "role": "Away",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 9.7,
+      "pred_k_total": 5.5,
+      "avg_ip": 5.1,
+      "form_z": -0.87,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.8 L5=5.8 SwStr=13.7% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        12,
+        5,
+        8,
+        5,
+        2
+      ],
+      "over_line": 5.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    }
+  ]
+}
