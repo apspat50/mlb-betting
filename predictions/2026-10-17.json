@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-17",
+  "pitchers": [
+    {
+      "pitcher": "Shawn Armstrong",
+      "role": "Home",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 7.9,
+      "pred_k_total": 4.8,
+      "avg_ip": 5.5,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.5 L5=5.5 SwStr=10.5% OppK=22.2%)",
+      "recent_ks": [],
+      "over_line": null,
+      "over_count": null,
+      "n_starts_checked": 0,
+      "season_starts": 0,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Nick Martinez",
+      "role": "Away",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 6.7,
+      "pred_k_total": 4.4,
+      "avg_ip": 5.9,
+      "form_z": -0.22,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.0 L5=4.0 SwStr=9.0% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        4,
+        4,
+        3,
+        3,
+        7
+      ],
+      "over_line": 3.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 30,
+      "small_sample": false
+    }
+  ]
+}
