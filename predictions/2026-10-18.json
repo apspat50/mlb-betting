@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-18",
+  "pitchers": [
+    {
+      "pitcher": "Parker Messick",
+      "role": "Home",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Tampa Bay Rays",
+      "time": "5:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 10.2,
+      "pred_k_total": 5.8,
+      "avg_ip": 5.1,
+      "form_z": -0.51,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.8 L5=5.8 SwStr=12.7% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        12,
+        5,
+        8,
+        5,
+        2
+      ],
+      "over_line": 5.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Drew Rasmussen",
+      "role": "Away",
+      "home_team": "Cleveland Guardians",
+      "away_team": "Tampa Bay Rays",
+      "time": "5:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 8.3,
+      "pred_k_total": 5.8,
+      "avg_ip": 6.3,
+      "form_z": 3.06,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.1 L5=6.1 SwStr=14.5% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        6,
+        7,
+        4,
+        3,
+        11
+      ],
+      "over_line": 5.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 29,
+      "small_sample": false
+    }
+  ]
+}
