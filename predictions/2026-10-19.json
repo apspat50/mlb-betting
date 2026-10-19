@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-19",
+  "pitchers": [
+    {
+      "pitcher": "Freddy Peralta",
+      "role": "Home",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Cleveland Guardians",
+      "pred_k9": 8.0,
+      "pred_k_total": 5.0,
+      "avg_ip": 5.6,
+      "form_z": -0.27,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=11.5% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        2,
+        4,
+        6,
+        4
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Shawn Armstrong",
+      "role": "Away",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Cleveland Guardians",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 7.9,
+      "pred_k_total": 4.8,
+      "avg_ip": 5.5,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.5 L5=5.5 SwStr=10.5% OppK=22.2%)",
+      "recent_ks": [],
+      "over_line": null,
+      "over_count": null,
+      "n_starts_checked": 0,
+      "season_starts": 0,
+      "small_sample": false
+    }
+  ]
+}
