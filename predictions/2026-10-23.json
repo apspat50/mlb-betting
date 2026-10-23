@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-23",
+  "pitchers": [
+    {
+      "pitcher": "Jacob Misiorowski",
+      "role": "Home",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 11.1,
+      "pred_k_total": 5.8,
+      "avg_ip": 4.7,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.1 L5=6.1 SwStr=14.1% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        5,
+        9,
+        7,
+        4,
+        5
+      ],
+      "over_line": 5.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 30,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Nick Martinez",
+      "role": "Away",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 6.7,
+      "pred_k_total": 4.4,
+      "avg_ip": 5.9,
+      "form_z": -1.14,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.0 L5=4.0 SwStr=9.2% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        4,
+        4,
+        3,
+        3,
+        7
+      ],
+      "over_line": 3.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 30,
+      "small_sample": false
+    }
+  ]
+}
