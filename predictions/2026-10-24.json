@@ -55,5 +55,75 @@
       "season_starts": 29,
       "small_sample": false
     }
+  ],
+  "batters": [
+    {
+      "batter": "Brice Turang",
+      "team": "Milwaukee Brewers",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "pred_h": 0.97,
+      "pred_tb": 1.45,
+      "pred_hr": 0.088,
+      "hr_pct": 9,
+      "form_z": -0.21602468994692864,
+      "hot": 0,
+      "slump": 0,
+      "exit_velo": 82.08571428571429,
+      "barrel": 0.0833,
+      "n_games": 13
+    },
+    {
+      "batter": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "pred_h": 1.07,
+      "pred_tb": 1.24,
+      "pred_hr": 0.0,
+      "hr_pct": 0,
+      "form_z": -0.31622776601683783,
+      "hot": 0,
+      "slump": 0,
+      "exit_velo": 87.35714285714286,
+      "barrel": 0.0,
+      "n_games": 11
+    },
+    {
+      "batter": "Ben Williamson",
+      "team": "Tampa Bay Rays",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "pred_h": 0.2,
+      "pred_tb": 0.15,
+      "pred_hr": 0.0,
+      "hr_pct": 0,
+      "form_z": 0,
+      "hot": 0,
+      "slump": 0,
+      "exit_velo": 85.11428571428573,
+      "barrel": 0.0,
+      "n_games": 8
+    },
+    {
+      "batter": "Chandler Simpson",
+      "team": "Tampa Bay Rays",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "pred_h": 0.79,
+      "pred_tb": 1.12,
+      "pred_hr": 0.0,
+      "hr_pct": 0,
+      "form_z": 1.2780193008453875,
+      "hot": 0,
+      "slump": 0,
+      "exit_velo": 79.35714285714286,
+      "barrel": 0.0,
+      "n_games": 11
+    }
   ]
 }
