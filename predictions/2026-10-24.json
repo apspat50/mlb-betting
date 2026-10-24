@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-24",
+  "pitchers": [
+    {
+      "pitcher": "Logan Henderson",
+      "role": "Home",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 8.7,
+      "pred_k_total": 5.6,
+      "avg_ip": 5.8,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.3 L5=6.3 SwStr=11.0% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        7,
+        6,
+        8,
+        3
+      ],
+      "over_line": 5.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 17,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Drew Rasmussen",
+      "role": "Away",
+      "home_team": "Milwaukee Brewers",
+      "away_team": "Tampa Bay Rays",
+      "time": "8:00 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 8.3,
+      "pred_k_total": 5.8,
+      "avg_ip": 6.3,
+      "form_z": 0.47,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.1 L5=6.1 SwStr=14.4% OppK=22.2%)",
+      "recent_ks": [
+        5,
+        6,
+        7,
+        4,
+        3,
+        11
+      ],
+      "over_line": 5.5,
+      "over_count": 3,
+      "n_starts_checked": 6,
+      "season_starts": 29,
+      "small_sample": false
+    }
+  ]
+}
