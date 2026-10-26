@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-26",
+  "pitchers": [
+    {
+      "pitcher": "Freddy Peralta",
+      "role": "Home",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Milwaukee Brewers",
+      "time": "8:00 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 8.7,
+      "pred_k_total": 5.4,
+      "avg_ip": 5.6,
+      "form_z": -0.31,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.7 L5=4.7 SwStr=14.1% OppK=22.2%)",
+      "recent_ks": [
+        4,
+        7,
+        2,
+        4,
+        6,
+        4
+      ],
+      "over_line": 4.5,
+      "over_count": 2,
+      "n_starts_checked": 6,
+      "season_starts": 32,
+      "small_sample": false
+    },
+    {
+      "pitcher": "Robert Gasser",
+      "role": "Away",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Milwaukee Brewers",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 8.7,
+      "pred_k_total": 5.2,
+      "avg_ip": 5.4,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=5.2 L5=5.2 SwStr=10.1% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        4,
+        5,
+        5,
+        2,
+        9
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 21,
+      "small_sample": false
+    }
+  ]
+}
