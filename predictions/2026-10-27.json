@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-27",
+  "pitchers": [
+    {
+      "pitcher": "Griffin Jax",
+      "role": "Home",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Milwaukee Brewers",
+      "time": "8:00 PM ET",
+      "opp_team": "Milwaukee Brewers",
+      "pred_k9": 10.4,
+      "pred_k_total": 5.3,
+      "avg_ip": 4.6,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=4.4 L5=4.4 SwStr=11.0% OppK=22.2%)",
+      "recent_ks": [
+        10,
+        8,
+        2,
+        7,
+        5,
+        1
+      ],
+      "over_line": 4.5,
+      "over_count": 4,
+      "n_starts_checked": 6,
+      "season_starts": 19,
+      "small_sample": false
+    }
+  ]
+}
