@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-28",
+  "pitchers": [
+    {
+      "pitcher": "Jacob Misiorowski",
+      "role": "Away",
+      "home_team": "Tampa Bay Rays",
+      "away_team": "Milwaukee Brewers",
+      "time": "8:00 PM ET",
+      "opp_team": "Tampa Bay Rays",
+      "pred_k9": 10.3,
+      "pred_k_total": 5.4,
+      "avg_ip": 4.7,
+      "form_z": 0,
+      "opp_kpct": 0.22,
+      "data_source": "Statcast (L3=6.1 L5=6.1 SwStr=10.2% OppK=22.2%)",
+      "recent_ks": [
+        6,
+        5,
+        9,
+        7,
+        4,
+        5
+      ],
+      "over_line": 4.5,
+      "over_count": 5,
+      "n_starts_checked": 6,
+      "season_starts": 30,
+      "small_sample": false
+    }
+  ]
+}
